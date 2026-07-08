@@ -14,6 +14,11 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    .fade-in-up { animation: fadeInUp 0.4s ease-out; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     .sr-only {
       position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; 
       overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
@@ -24,6 +29,7 @@
     }
     body { position: relative; }
     .card-wrapper { position: relative; z-index: 1; }
+    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.8); cursor: pointer; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-200 font-sans p-4 md:p-8 flex items-center justify-center">
@@ -51,33 +57,59 @@
       </button>
       <button id="tab-generator" class="flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
         <i data-lucide="key-round" class="w-4 h-4"></i>
-        Password Generator
+        Random Gen
+      </button>
+      <button id="tab-self" class="flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+        <i data-lucide="user" class="w-4 h-4"></i>
+        Personal Gen
       </button>
     </div>
 
     <!-- Content Area -->
     <div class="p-6 md:p-8 relative min-h-[500px]">
-      
+
+      <!-- ==================== WELCOME VIEW ==================== -->
+      <div id="view-welcome" class="fade-in">
+        <div class="text-center mb-8 fade-in-up">
+          <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="sparkles" class="w-8 h-8"></i>
+          </div>
+          <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">How would you like to proceed?</h2>
+          <p class="text-slate-400">Choose a method to create your secure password</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 fade-in-up" style="animation-delay: 0.1s">
+          <button id="welcome-random" class="group bg-slate-950/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-8 text-left hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <i data-lucide="shuffle" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Random Password</h3>
+            <p class="text-sm text-slate-400">Generate a cryptographically random password with customizable length and character types.</p>
+          </button>
+          <button id="welcome-self" class="group bg-slate-950/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-8 text-left hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <i data-lucide="user" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Generate from Your Info</h3>
+            <p class="text-sm text-slate-400">Create a memorable yet secure password based on your personal details like name and date of birth.</p>
+          </button>
+        </div>
+        <div class="text-center mt-8 fade-in-up" style="animation-delay: 0.2s">
+          <p class="text-xs text-slate-500">Or use the tabs above to access all tools directly</p>
+        </div>
+      </div>
+
       <!-- ==================== ANALYZER VIEW ==================== -->
-      <div id="view-analyzer" class="space-y-8 fade-in block">
+      <div id="view-analyzer" class="space-y-8 fade-in hidden">
         <div class="relative">
-          <input
-            type="password"
-            id="analyzer-input"
-            placeholder="Type a password to test..."
-            class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-4 pr-12 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-lg"
-          />
+          <input type="password" id="analyzer-input" placeholder="Type a password to test..." class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-4 pr-12 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-lg" />
           <button id="analyzer-toggle-visibility" type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
             <i data-lucide="eye" id="eye-icon"></i>
           </button>
         </div>
-
-        <!-- Strength Indicator -->
         <div class="bg-slate-950/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/30">
           <div class="flex justify-between items-end mb-4">
             <div class="flex items-center gap-3">
-              <div id="analyzer-icon">
-              </div>
+              <div id="analyzer-icon"></div>
               <div>
                 <p class="text-sm text-slate-400 mb-1">Strength Level</p>
                 <h2 id="analyzer-label" class="text-2xl font-bold text-slate-400">Enter a password</h2>
@@ -85,12 +117,10 @@
             </div>
             <span id="analyzer-score-text" class="text-xl font-mono text-slate-300">0%</span>
           </div>
-          
           <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden flex">
             <div id="analyzer-progress" class="h-full bg-slate-700 transition-all duration-500 ease-out" style="width: 0%"></div>
           </div>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-3">
             <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Requirements Checklist</h3>
@@ -100,21 +130,17 @@
             <div id="req-numbers" class="flex items-center gap-2 text-sm text-slate-500"></div>
             <div id="req-symbols" class="flex items-center gap-2 text-sm text-slate-500"></div>
           </div>
-
           <div id="feedback-container" class="space-y-3 hidden">
             <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Security Insights</h3>
-            <ul id="feedback-list" class="space-y-2">
-            </ul>
+            <ul id="feedback-list" class="space-y-2"></ul>
           </div>
         </div>
       </div>
 
-      <!-- ==================== GENERATOR VIEW ==================== -->
+      <!-- ==================== RANDOM GENERATOR VIEW ==================== -->
       <div id="view-generator" class="space-y-8 fade-in hidden">
         <div class="relative group">
-          <div id="gen-output" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-emerald-400 break-all min-h-[5rem] flex items-center">
-          </div>
-          
+          <div id="gen-output" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-emerald-400 break-all min-h-[5rem] flex items-center"></div>
           <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
             <button id="gen-refresh" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all" title="Generate New">
               <i data-lucide="refresh-cw" class="w-5 h-5"></i>
@@ -125,66 +151,101 @@
             </button>
           </div>
         </div>
-
         <div class="bg-slate-950/40 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/30 space-y-6">
           <div class="flex justify-between items-center mb-2">
             <label class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Password Length</label>
             <span id="gen-length-display" class="text-2xl font-mono font-bold text-white bg-slate-800 px-3 py-1 rounded-lg">16</span>
           </div>
           <input type="range" id="gen-length" min="8" max="128" value="16" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
-          <div class="flex justify-between text-xs font-mono text-slate-500">
-            <span>8</span>
-            <span>64</span>
-            <span>128</span>
-          </div>
+          <div class="flex justify-between text-xs font-mono text-slate-500"><span>8</span><span>64</span><span>128</span></div>
         </div>
-
         <div class="space-y-4">
           <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Character Types</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label for="opt-uppercase" id="lbl-uppercase" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
-              <div>
-                <div class="font-medium text-emerald-400 lbl-title">Uppercase Letters</div>
-                <div class="text-xs text-slate-500 font-mono mt-0.5">(A-Z)</div>
-              </div>
-              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950">
-                <i data-lucide="check" class="w-4 h-4"></i>
-              </div>
+              <div><div class="font-medium text-emerald-400 lbl-title">Uppercase Letters</div><div class="text-xs text-slate-500 font-mono mt-0.5">(A-Z)</div></div>
+              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"><i data-lucide="check" class="w-4 h-4"></i></div>
               <input type="checkbox" id="opt-uppercase" class="sr-only opt-checkbox" checked />
             </label>
-
-            <label for="opt-lowercase" id="lbl-lowercase" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30">
-              <div>
-                <div class="font-medium text-emerald-400 lbl-title">Lowercase Letters</div>
-                <div class="text-xs text-slate-500 font-mono mt-0.5">(a-z)</div>
-              </div>
-              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950">
-                <i data-lucide="check" class="w-4 h-4"></i>
-              </div>
+            <label for="opt-lowercase" id="lbl-lowercase" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
+              <div><div class="font-medium text-emerald-400 lbl-title">Lowercase Letters</div><div class="text-xs text-slate-500 font-mono mt-0.5">(a-z)</div></div>
+              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"><i data-lucide="check" class="w-4 h-4"></i></div>
               <input type="checkbox" id="opt-lowercase" class="sr-only opt-checkbox" checked />
             </label>
-
-            <label for="opt-numbers" id="lbl-numbers" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30">
-              <div>
-                <div class="font-medium text-emerald-400 lbl-title">Numbers</div>
-                <div class="text-xs text-slate-500 font-mono mt-0.5">(0-9)</div>
-              </div>
-              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950">
-                <i data-lucide="check" class="w-4 h-4"></i>
-              </div>
+            <label for="opt-numbers" id="lbl-numbers" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
+              <div><div class="font-medium text-emerald-400 lbl-title">Numbers</div><div class="text-xs text-slate-500 font-mono mt-0.5">(0-9)</div></div>
+              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"><i data-lucide="check" class="w-4 h-4"></i></div>
               <input type="checkbox" id="opt-numbers" class="sr-only opt-checkbox" checked />
             </label>
-
-            <label for="opt-symbols" id="lbl-symbols" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30">
-              <div>
-                <div class="font-medium text-emerald-400 lbl-title">Special Symbols</div>
-                <div class="text-xs text-slate-500 font-mono mt-0.5">(!@#$)</div>
-              </div>
-              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950">
-                <i data-lucide="check" class="w-4 h-4"></i>
-              </div>
+            <label for="opt-symbols" id="lbl-symbols" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
+              <div><div class="font-medium text-emerald-400 lbl-title">Special Symbols</div><div class="text-xs text-slate-500 font-mono mt-0.5">(!@#$)</div></div>
+              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"><i data-lucide="check" class="w-4 h-4"></i></div>
               <input type="checkbox" id="opt-symbols" class="sr-only opt-checkbox" checked />
             </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== PERSONAL GENERATOR VIEW ==================== -->
+      <div id="view-self" class="space-y-8 fade-in hidden">
+        <div class="bg-slate-950/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/30">
+          <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Your Details</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-slate-400 mb-1.5">First Name</label>
+              <input type="text" id="self-firstname" placeholder="John" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" />
+            </div>
+            <div>
+              <label class="block text-sm text-slate-400 mb-1.5">Last Name</label>
+              <input type="text" id="self-lastname" placeholder="Doe" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" />
+            </div>
+            <div>
+              <label class="block text-sm text-slate-400 mb-1.5">Date of Birth</label>
+              <input type="date" id="self-dob" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-all" />
+            </div>
+            <div>
+              <label class="block text-sm text-slate-400 mb-1.5">Nickname / Pet Name</label>
+              <input type="text" id="self-nickname" placeholder="Buddy" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" />
+            </div>
+            <div>
+              <label class="block text-sm text-slate-400 mb-1.5">Favorite Number</label>
+              <input type="number" id="self-favnum" placeholder="7" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" />
+            </div>
+            <div>
+              <label class="block text-sm text-slate-400 mb-1.5">Favorite Color</label>
+              <input type="text" id="self-color" placeholder="Blue" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" />
+            </div>
+          </div>
+          <button id="self-generate-btn" class="mt-6 w-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-medium rounded-xl px-6 py-3 transition-all flex items-center justify-center gap-2">
+            <i data-lucide="wand" class="w-5 h-5"></i>
+            Generate Password from My Info
+          </button>
+        </div>
+
+        <div id="self-result" class="hidden fade-in space-y-6">
+          <div class="relative group">
+            <div id="self-output" class="w-full bg-slate-950/70 border border-emerald-500/30 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-emerald-400 break-all min-h-[5rem] flex items-center"></div>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+              <button id="self-refresh" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all" title="Regenerate">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+              </button>
+              <button id="self-copy" class="flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-slate-800 text-slate-300 hover:bg-slate-700">
+                <span id="self-copy-icon"></span>
+                <span id="self-copy-text" class="hidden md:inline text-sm">Copy</span>
+              </button>
+            </div>
+          </div>
+          <div id="self-strength" class="bg-slate-950/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/30">
+            <div class="flex justify-between items-center mb-3">
+              <div class="flex items-center gap-2">
+                <div id="self-strength-icon"></div>
+                <span id="self-strength-label" class="font-bold text-lg text-slate-300">Checking...</span>
+              </div>
+              <span id="self-score-text" class="text-lg font-mono text-slate-300">0%</span>
+            </div>
+            <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div id="self-progress" class="h-full bg-slate-700 transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -208,29 +269,39 @@
       check: `<svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>`
     };
 
-    const tabAnalyzer = document.getElementById('tab-analyzer');
-    const tabGenerator = document.getElementById('tab-generator');
-    const viewAnalyzer = document.getElementById('view-analyzer');
-    const viewGenerator = document.getElementById('view-generator');
+    const views = ['welcome', 'analyzer', 'generator', 'self'];
+    const viewEls = {
+      welcome: document.getElementById('view-welcome'),
+      analyzer: document.getElementById('view-analyzer'),
+      generator: document.getElementById('view-generator'),
+      self: document.getElementById('view-self')
+    };
+    const tabEls = {
+      analyzer: document.getElementById('tab-analyzer'),
+      generator: document.getElementById('tab-generator'),
+      self: document.getElementById('tab-self')
+    };
+    const tabNames = { analyzer: 'Analyzer', generator: 'Random Gen', self: 'Personal Gen' };
 
-    function switchTab(tab) {
-      if (tab === 'analyzer') {
-        viewAnalyzer.classList.remove('hidden');
-        viewGenerator.classList.add('hidden');
-        
-        tabAnalyzer.className = "flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/5";
-        tabGenerator.className = "flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
-      } else {
-        viewAnalyzer.classList.add('hidden');
-        viewGenerator.classList.remove('hidden');
-        
-        tabGenerator.className = "flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/5";
-        tabAnalyzer.className = "flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
-      }
+    function tabClass(isActive) {
+      return isActive
+        ? "flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/10"
+        : "flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
     }
 
-    tabAnalyzer.addEventListener('click', () => switchTab('analyzer'));
-    tabGenerator.addEventListener('click', () => switchTab('generator'));
+    function showView(id) {
+      views.forEach(v => viewEls[v].classList.toggle('hidden', v !== id));
+      ['analyzer', 'generator', 'self'].forEach(t => {
+        tabEls[t].className = tabClass(t === id);
+      });
+    }
+
+    tabEls.analyzer.addEventListener('click', () => showView('analyzer'));
+    tabEls.generator.addEventListener('click', () => showView('generator'));
+    tabEls.self.addEventListener('click', () => showView('self'));
+
+    document.getElementById('welcome-random').addEventListener('click', () => showView('generator'));
+    document.getElementById('welcome-self').addEventListener('click', () => showView('self'));
 
     const aInput = document.getElementById('analyzer-input');
     const aToggleVis = document.getElementById('analyzer-toggle-visibility');
@@ -362,8 +433,148 @@
     }
 
     aInput.addEventListener('input', (e) => analyzePassword(e.target.value));
-    
     analyzePassword('');
+
+    // ==================== PERSONAL GENERATOR LOGIC ====================
+    const selfResult = document.getElementById('self-result');
+    const selfOutput = document.getElementById('self-output');
+    const selfGenerateBtn = document.getElementById('self-generate-btn');
+    const selfRefresh = document.getElementById('self-refresh');
+    const selfCopy = document.getElementById('self-copy');
+    const selfCopyIcon = document.getElementById('self-copy-icon');
+    const selfCopyText = document.getElementById('self-copy-text');
+    const selfStrengthIcon = document.getElementById('self-strength-icon');
+    const selfStrengthLabel = document.getElementById('self-strength-label');
+    const selfScoreText = document.getElementById('self-score-text');
+    const selfProgress = document.getElementById('self-progress');
+
+    function generatePersonalPassword() {
+      const first = document.getElementById('self-firstname').value.trim();
+      const last = document.getElementById('self-lastname').value.trim();
+      const dob = document.getElementById('self-dob').value;
+      const nick = document.getElementById('self-nickname').value.trim();
+      const favnum = document.getElementById('self-favnum').value.trim();
+      const color = document.getElementById('self-color').value.trim();
+
+      if (!first && !last && !nick) {
+        selfOutput.textContent = 'Please fill in at least your first name or nickname';
+        selfOutput.className = 'w-full bg-slate-950/70 border border-amber-500/30 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-amber-400 break-all min-h-[5rem] flex items-center';
+        selfResult.classList.remove('hidden');
+        return;
+      }
+
+      selfOutput.className = 'w-full bg-slate-950/70 border border-emerald-500/30 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-emerald-400 break-all min-h-[5rem] flex items-center';
+
+      const dobParts = dob ? dob.split('-') : [];
+      const dobYear = dobParts[0] || '';
+      const dobMonth = dobParts[1] || '';
+      const dobDay = dobParts[2] || '';
+
+      const sym = '!@#$%^&*';
+      const parts = [];
+      if (first) parts.push(first);
+      if (last) parts.push(last);
+      if (nick) parts.push(nick);
+      if (color) parts.push(color);
+      if (dobYear) parts.push(dobYear);
+      if (favnum) parts.push(favnum);
+
+      if (parts.length < 2 && dobMonth) parts.push(dobMonth);
+
+      let base = parts.join('');
+      if (dobDay) base += dobDay;
+
+      const transforms = [
+        () => base.toLowerCase(),
+        () => {
+          let s = base;
+          return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+        },
+        () => {
+          let s = base;
+          return s.split('').map((c, i) => i % 2 === 0 ? c.toUpperCase() : c.toLowerCase()).join('');
+        },
+        () => {
+          let s = base;
+          if (dobYear) s += sym[dobYear.length % sym.length];
+          if (favnum) s += sym[parseInt(favnum) % sym.length] || sym[0];
+          else s += sym[Math.floor(Math.random() * sym.length)];
+          return s;
+        }
+      ];
+
+      const pick = transforms[Math.floor(Math.random() * transforms.length)];
+      let pwd = pick();
+
+      const minLen = 10;
+      if (pwd.length < minLen) {
+        const pad = sym[Math.floor(Math.random() * sym.length)] + Math.floor(Math.random() * 999).toString();
+        pwd += pad;
+      }
+
+      pwd = pwd.split('');
+      for (let i = pwd.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pwd[i], pwd[j]] = [pwd[j], pwd[i]];
+      }
+
+      const finalPwd = pwd.join('');
+
+      selfOutput.textContent = finalPwd;
+
+      // strength analysis
+      const sl = finalPwd.length >= 8;
+      const sU = /[A-Z]/.test(finalPwd);
+      const sL = /[a-z]/.test(finalPwd);
+      const sN = /[0-9]/.test(finalPwd);
+      const sS = /[^A-Za-z0-9]/.test(finalPwd);
+      let sc = Math.min(finalPwd.length * 4, 40);
+      if (sU) sc += 10;
+      if (sL) sc += 10;
+      if (sN) sc += 10;
+      if (sS) sc += 15;
+      if (sU && sL && sN && sS) sc += 15;
+      sc = Math.max(0, Math.min(sc, 100));
+
+      let label = 'Very Weak', cc = 'bg-red-500', tc = 'text-red-400', ic = icons.shieldAlertR;
+      if (sc > 80) { label = 'Very Strong'; cc = 'bg-emerald-500'; tc = 'text-emerald-400'; ic = icons.shieldCheckE; }
+      else if (sc > 60) { label = 'Strong'; cc = 'bg-teal-500'; tc = 'text-teal-400'; ic = icons.shieldCheckT; }
+      else if (sc > 40) { label = 'Moderate'; cc = 'bg-amber-500'; tc = 'text-amber-400'; ic = icons.alertTriangle; }
+      else if (sc > 20) { label = 'Weak'; cc = 'bg-orange-500'; tc = 'text-orange-400'; ic = icons.shieldAlertO; }
+
+      selfStrengthIcon.innerHTML = ic;
+      selfStrengthLabel.textContent = label;
+      selfStrengthLabel.className = `font-bold text-lg ${tc}`;
+      selfScoreText.textContent = `${sc}%`;
+      selfProgress.className = `h-full ${cc} transition-all duration-500 ease-out`;
+      selfProgress.style.width = `${sc}%`;
+
+      selfResult.classList.remove('hidden');
+      resetSelfCopy();
+    }
+
+    function resetSelfCopy() {
+      selfCopyIcon.innerHTML = icons.copy;
+      selfCopyText.textContent = 'Copy';
+      selfCopy.className = 'flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-slate-800 text-slate-300 hover:bg-slate-700';
+    }
+
+    selfGenerateBtn.addEventListener('click', generatePersonalPassword);
+    selfRefresh.addEventListener('click', generatePersonalPassword);
+    selfCopy.addEventListener('click', () => {
+      const pwd = selfOutput.textContent;
+      if (!pwd || pwd.includes('fill in')) return;
+      const ta = document.createElement('textarea');
+      ta.value = pwd;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      selfCopyIcon.innerHTML = icons.check;
+      selfCopyText.textContent = 'Copied';
+      selfCopy.className = 'flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-emerald-500/20 text-emerald-400';
+      setTimeout(resetSelfCopy, 2000);
+    });
 
     let genOptions = { uppercase: true, lowercase: true, numbers: true, symbols: true };
     const genOutput = document.getElementById('gen-output');
