@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Networking & Linux MCQ — Exam Sheet</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      background: #e8eaf0;
+      padding: 24px;
+      color: #202124;
+    }
+    .form-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.08);
+      margin-bottom: 16px;
+      padding: 24px 28px;
+    }
+    .header {
+      background: #1a73e8;
+      color: #fff;
+      border-radius: 8px 8px 0 0;
+      padding: 28px 28px 20px;
+    }
+    .header h1 { font-size: 28px; font-weight: 500; margin-bottom: 4px; }
+    .header p { font-size: 14px; opacity: .85; }
+    .header .meta { margin-top: 12px; display: flex; gap: 24px; font-size: 13px; }
+    .section-title {
+      background: #f8f9fa;
+      border-left: 4px solid #1a73e8;
+      padding: 12px 16px;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      border-radius: 0 4px 4px 0;
+    }
+    .question { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e0e0e0; }
+    .question:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .q-text { font-size: 15px; font-weight: 500; margin-bottom: 10px; line-height: 1.5; }
+    .q-label { color: #5f6368; font-size: 12px; font-weight: 600; letter-spacing: .5px; margin-bottom: 4px; }
+    .options { display: flex; flex-direction: column; gap: 6px; }
+    .option {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; border-radius: 6px;
+      cursor: pointer; transition: background .15s;
+    }
+    .option:hover { background: #f1f3f4; }
+    .option input[type="radio"] {
+      width: 18px; height: 18px; accent-color: #1a73e8;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .option label { cursor: pointer; font-size: 14px; line-height: 1.4; }
+    .required-star { color: #d93025; }
+    .answer-sheet {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 13px;
+    }
+    .answer-sheet table {
+      width: 100%; border-collapse: collapse;
+    }
+    .answer-sheet td, .answer-sheet th {
+      border: 1px solid #dadce0; padding: 6px 10px; text-align: center;
+    }
+    .answer-sheet th { background: #f1f3f4; font-weight: 600; }
+    .answer-input { width: 40px; border: none; border-bottom: 1px solid #1a73e8; text-align: center; outline: none; font-family: inherit; font-size: 13px; }
+    .btn-submit {
+      background: #1a73e8; color: #fff; border: none;
+      padding: 12px 32px; font-size: 15px; font-weight: 500;
+      border-radius: 6px; cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-submit:hover { background: #1765cc; }
+    .footer { text-align: center; font-size: 12px; color: #5f6368; margin: 24px 0; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+      .btn-submit { display: none; }
+      .header { background: #1a73e8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .section-title { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+<div class="form-container">
+
+  <!-- HEADER -->
+  <div class="card header">
+    <h1>Networking &amp; Linux MCQ</h1>
+    <p>65 Questions &middot; 5 Sections &middot; Basic–Mid Difficulty &middot; MCQ Format</p>
+    <div class="meta">
+      <span>Instructions: Read each question carefully and select the best answer. Each question has exactly one correct answer.</span>
+    </div>
+    <div style="margin-top:12px;font-size:13px;">
+      <span style="color:#fff;background:rgba(255,255,255,.2);padding:2px 10px;border-radius:12px;">* Required</span>
+    </div>
+  </div>
+
+  <!-- SECTION 1: NETWORKING FUNDAMENTALS -->
+  <div class="card">
+    <div class="section-title">Section 1: Networking Fundamentals <span style="font-weight:400;font-size:13px;color:#5f6368;">(Q1 &ndash; Q17)</span></div>
+
+    <div class="question"><div class="q-label">Q1 <span class="required-star">*</span></div><div class="q-text">Which layer of the OSI model is responsible for end-to-end communication and error recovery?</div><div class="options">
+      <div class="option"><input type="radio" name="q1" id="q1a"><label for="q1a">A) Network Layer</label></div>
+      <div class="option"><input type="radio" name="q1" id="q1b"><label for="q1b">B) Data Link Layer</label></div>
+      <div class="option"><input type="radio" name="q1" id="q1c"><label for="q1c">C) Transport Layer</label></div>
+      <div class="option"><input type="radio" name="q1" id="q1d"><label for="q1d">D) Session Layer</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q2 <span class="required-star">*</span></div><div class="q-text">What does the acronym 'CIDR' stand for in networking?</div><div class="options">
+      <div class="option"><input type="radio" name="q2" id="q2a"><label for="q2a">A) Classless Inter-Domain Routing</label></div>
+      <div class="option"><input type="radio" name="q2" id="q2b"><label for="q2b">B) Class-based Internal Domain Routing</label></div>
+      <div class="option"><input type="radio" name="q2" id="q2c"><label for="q2c">C) Classful Inter-Device Routing</label></div>
+      <div class="option"><input type="radio" name="q2" id="q2d"><label for="q2d">D) Common Internet Data Routing</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q3 <span class="required-star">*</span></div><div class="q-text">Which protocol operates at the Network layer and is responsible for logical addressing?</div><div class="options">
+      <div class="option"><input type="radio" name="q3" id="q3a"><label for="q3a">A) TCP</label></div>
+      <div class="option"><input type="radio" name="q3" id="q3b"><label for="q3b">B) Ethernet</label></div>
+      <div class="option"><input type="radio" name="q3" id="q3c"><label for="q3c">C) IP</label></div>
+      <div class="option"><input type="radio" name="q3" id="q3d"><label for="q3d">D) ARP</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q4 <span class="required-star">*</span></div><div class="q-text">What is the default subnet mask for a Class C IP address?</div><div class="options">
+      <div class="option"><input type="radio" name="q4" id="q4a"><label for="q4a">A) 255.0.0.0</label></div>
+      <div class="option"><input type="radio" name="q4" id="q4b"><label for="q4b">B) 255.255.0.0</label></div>
+      <div class="option"><input type="radio" name="q4" id="q4c"><label for="q4c">C) 255.255.255.0</label></div>
+      <div class="option"><input type="radio" name="q4" id="q4d"><label for="q4d">D) 255.255.255.128</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q5 <span class="required-star">*</span></div><div class="q-text">Which port number does HTTPS use by default?</div><div class="options">
+      <div class="option"><input type="radio" name="q5" id="q5a"><label for="q5a">A) 80</label></div>
+      <div class="option"><input type="radio" name="q5" id="q5b"><label for="q5b">B) 8080</label></div>
+      <div class="option"><input type="radio" name="q5" id="q5c"><label for="q5c">C) 22</label></div>
+      <div class="option"><input type="radio" name="q5" id="q5d"><label for="q5d">D) 443</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q6 <span class="required-star">*</span></div><div class="q-text">What type of address is FF:FF:FF:FF:FF:FF in Ethernet networking?</div><div class="options">
+      <div class="option"><input type="radio" name="q6" id="q6a"><label for="q6a">A) Unicast address</label></div>
+      <div class="option"><input type="radio" name="q6" id="q6b"><label for="q6b">B) Multicast address</label></div>
+      <div class="option"><input type="radio" name="q6" id="q6c"><label for="q6c">C) Broadcast address</label></div>
+      <div class="option"><input type="radio" name="q6" id="q6d"><label for="q6d">D) Loopback address</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q7 <span class="required-star">*</span></div><div class="q-text">Which protocol is used to automatically assign IP addresses to devices on a network?</div><div class="options">
+      <div class="option"><input type="radio" name="q7" id="q7a"><label for="q7a">A) DNS</label></div>
+      <div class="option"><input type="radio" name="q7" id="q7b"><label for="q7b">B) DHCP</label></div>
+      <div class="option"><input type="radio" name="q7" id="q7c"><label for="q7c">C) FTP</label></div>
+      <div class="option"><input type="radio" name="q7" id="q7d"><label for="q7d">D) SNMP</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q8 <span class="required-star">*</span></div><div class="q-text">What is the purpose of the ARP protocol?</div><div class="options">
+      <div class="option"><input type="radio" name="q8" id="q8a"><label for="q8a">A) Translates domain names to IP addresses</label></div>
+      <div class="option"><input type="radio" name="q8" id="q8b"><label for="q8b">B) Maps IP addresses to MAC addresses</label></div>
+      <div class="option"><input type="radio" name="q8" id="q8c"><label for="q8c">C) Encrypts network traffic</label></div>
+      <div class="option"><input type="radio" name="q8" id="q8d"><label for="q8d">D) Routes packets across networks</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q9 <span class="required-star">*</span></div><div class="q-text">In TCP's three-way handshake, what is the correct sequence of messages?</div><div class="options">
+      <div class="option"><input type="radio" name="q9" id="q9a"><label for="q9a">A) SYN → ACK → SYN-ACK</label></div>
+      <div class="option"><input type="radio" name="q9" id="q9b"><label for="q9b">B) ACK → SYN → SYN-ACK</label></div>
+      <div class="option"><input type="radio" name="q9" id="q9c"><label for="q9c">C) SYN → SYN-ACK → ACK</label></div>
+      <div class="option"><input type="radio" name="q9" id="q9d"><label for="q9d">D) SYN-ACK → SYN → ACK</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q10 <span class="required-star">*</span></div><div class="q-text">Which of the following is a private IP address range as per RFC 1918?</div><div class="options">
+      <div class="option"><input type="radio" name="q10" id="q10a"><label for="q10a">A) 172.32.0.0/12</label></div>
+      <div class="option"><input type="radio" name="q10" id="q10b"><label for="q10b">B) 10.0.0.0/8</label></div>
+      <div class="option"><input type="radio" name="q10" id="q10c"><label for="q10c">C) 192.169.0.0/16</label></div>
+      <div class="option"><input type="radio" name="q10" id="q10d"><label for="q10d">D) 100.64.0.0/10</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q11 <span class="required-star">*</span></div><div class="q-text">What does a DNS server primarily do?</div><div class="options">
+      <div class="option"><input type="radio" name="q11" id="q11a"><label for="q11a">A) Assigns IP addresses dynamically</label></div>
+      <div class="option"><input type="radio" name="q11" id="q11b"><label for="q11b">B) Translates domain names to IP addresses</label></div>
+      <div class="option"><input type="radio" name="q11" id="q11c"><label for="q11c">C) Manages routing tables</label></div>
+      <div class="option"><input type="radio" name="q11" id="q11d"><label for="q11d">D) Filters network traffic</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q12 <span class="required-star">*</span></div><div class="q-text">Which protocol uses port 22 for secure remote shell access?</div><div class="options">
+      <div class="option"><input type="radio" name="q12" id="q12a"><label for="q12a">A) Telnet</label></div>
+      <div class="option"><input type="radio" name="q12" id="q12b"><label for="q12b">B) FTP</label></div>
+      <div class="option"><input type="radio" name="q12" id="q12c"><label for="q12c">C) SSH</label></div>
+      <div class="option"><input type="radio" name="q12" id="q12d"><label for="q12d">D) RDP</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q13 <span class="required-star">*</span></div><div class="q-text">What is the loopback IP address used for testing the local network stack?</div><div class="options">
+      <div class="option"><input type="radio" name="q13" id="q13a"><label for="q13a">A) 192.168.1.1</label></div>
+      <div class="option"><input type="radio" name="q13" id="q13b"><label for="q13b">B) 0.0.0.0</label></div>
+      <div class="option"><input type="radio" name="q13" id="q13c"><label for="q13c">C) 127.0.0.1</label></div>
+      <div class="option"><input type="radio" name="q13" id="q13d"><label for="q13d">D) 255.255.255.255</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q14 <span class="required-star">*</span></div><div class="q-text">Which network device operates at Layer 2 of the OSI model and uses MAC addresses to forward frames?</div><div class="options">
+      <div class="option"><input type="radio" name="q14" id="q14a"><label for="q14a">A) Router</label></div>
+      <div class="option"><input type="radio" name="q14" id="q14b"><label for="q14b">B) Hub</label></div>
+      <div class="option"><input type="radio" name="q14" id="q14c"><label for="q14c">C) Switch</label></div>
+      <div class="option"><input type="radio" name="q14" id="q14d"><label for="q14d">D) Firewall</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q15 <span class="required-star">*</span></div><div class="q-text">What is the purpose of NAT (Network Address Translation)?</div><div class="options">
+      <div class="option"><input type="radio" name="q15" id="q15a"><label for="q15a">A) Assigns public IPs to all devices</label></div>
+      <div class="option"><input type="radio" name="q15" id="q15b"><label for="q15b">B) Translates private IP addresses to a public IP for internet access</label></div>
+      <div class="option"><input type="radio" name="q15" id="q15c"><label for="q15c">C) Encrypts all network communications</label></div>
+      <div class="option"><input type="radio" name="q15" id="q15d"><label for="q15d">D) Manages DNS records</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q16 <span class="required-star">*</span></div><div class="q-text">Which command is used to display the routing table on a Linux system?</div><div class="options">
+      <div class="option"><input type="radio" name="q16" id="q16a"><label for="q16a">A) netstat -r</label></div>
+      <div class="option"><input type="radio" name="q16" id="q16b"><label for="q16b">B) ip route show</label></div>
+      <div class="option"><input type="radio" name="q16" id="q16c"><label for="q16c">C) Both A and B</label></div>
+      <div class="option"><input type="radio" name="q16" id="q16d"><label for="q16d">D) route -list</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q17 <span class="required-star">*</span></div><div class="q-text">What does VLAN stand for, and what is its primary use?</div><div class="options">
+      <div class="option"><input type="radio" name="q17" id="q17a"><label for="q17a">A) Virtual LAN — segments a physical network into logical networks</label></div>
+      <div class="option"><input type="radio" name="q17" id="q17b"><label for="q17b">B) Virtual Link Access Network — speeds up connections</label></div>
+      <div class="option"><input type="radio" name="q17" id="q17c"><label for="q17c">C) Verified Local Area Network — authenticates devices</label></div>
+      <div class="option"><input type="radio" name="q17" id="q17d"><label for="q17d">D) Variable LAN — adjusts bandwidth dynamically</label></div>
+    </div></div>
+  </div>
+
+  <!-- SECTION 2: VIRTUALBOX NETWORK MODES -->
+  <div class="card">
+    <div class="section-title">Section 2: VirtualBox Network Modes <span style="font-weight:400;font-size:13px;color:#5f6368;">(Q18 &ndash; Q27)</span></div>
+
+    <div class="question"><div class="q-label">Q18 <span class="required-star">*</span></div><div class="q-text">In VirtualBox, which network mode allows the VM to access the internet but makes it invisible to other machines on the host network?</div><div class="options">
+      <div class="option"><input type="radio" name="q18" id="q18a"><label for="q18a">A) Bridged Adapter</label></div>
+      <div class="option"><input type="radio" name="q18" id="q18b"><label for="q18b">B) Host-Only Adapter</label></div>
+      <div class="option"><input type="radio" name="q18" id="q18c"><label for="q18c">C) NAT</label></div>
+      <div class="option"><input type="radio" name="q18" id="q18d"><label for="q18d">D) Internal Network</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q19 <span class="required-star">*</span></div><div class="q-text">Which VirtualBox network mode gives the VM its own IP on the same subnet as the physical host, making it visible to other network hosts?</div><div class="options">
+      <div class="option"><input type="radio" name="q19" id="q19a"><label for="q19a">A) NAT</label></div>
+      <div class="option"><input type="radio" name="q19" id="q19b"><label for="q19b">B) NAT Network</label></div>
+      <div class="option"><input type="radio" name="q19" id="q19c"><label for="q19c">C) Internal Network</label></div>
+      <div class="option"><input type="radio" name="q19" id="q19d"><label for="q19d">D) Bridged Adapter</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q20 <span class="required-star">*</span></div><div class="q-text">What is the key difference between 'NAT' and 'NAT Network' in VirtualBox?</div><div class="options">
+      <div class="option"><input type="radio" name="q20" id="q20a"><label for="q20a">A) NAT is faster than NAT Network</label></div>
+      <div class="option"><input type="radio" name="q20" id="q20b"><label for="q20b">B) NAT Network allows VMs to communicate with each other while sharing one NAT</label></div>
+      <div class="option"><input type="radio" name="q20" id="q20c"><label for="q20c">C) NAT Network uses a bridged connection</label></div>
+      <div class="option"><input type="radio" name="q20" id="q20d"><label for="q20d">D) NAT provides more security than NAT Network</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q21 <span class="required-star">*</span></div><div class="q-text">Which VirtualBox network mode creates an isolated network between VMs with NO access to the host OS or the internet?</div><div class="options">
+      <div class="option"><input type="radio" name="q21" id="q21a"><label for="q21a">A) Host-Only Adapter</label></div>
+      <div class="option"><input type="radio" name="q21" id="q21b"><label for="q21b">B) Internal Network</label></div>
+      <div class="option"><input type="radio" name="q21" id="q21c"><label for="q21c">C) NAT</label></div>
+      <div class="option"><input type="radio" name="q21" id="q21d"><label for="q21d">D) Bridged Adapter</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q22 <span class="required-star">*</span></div><div class="q-text">Host-Only networking in VirtualBox allows communication between:</div><div class="options">
+      <div class="option"><input type="radio" name="q22" id="q22a"><label for="q22a">A) The VM and the internet only</label></div>
+      <div class="option"><input type="radio" name="q22" id="q22b"><label for="q22b">B) VMs and the host machine only, with no internet access</label></div>
+      <div class="option"><input type="radio" name="q22" id="q22c"><label for="q22c">C) VMs only, excluding the host</label></div>
+      <div class="option"><input type="radio" name="q22" id="q22d"><label for="q22d">D) The VM and any machine on the LAN</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q23 <span class="required-star">*</span></div><div class="q-text">When setting up a vulnerable lab (e.g., Metasploitable) safely in VirtualBox, which network mode is MOST recommended?</div><div class="options">
+      <div class="option"><input type="radio" name="q23" id="q23a"><label for="q23a">A) Bridged Adapter</label></div>
+      <div class="option"><input type="radio" name="q23" id="q23b"><label for="q23b">B) NAT</label></div>
+      <div class="option"><input type="radio" name="q23" id="q23c"><label for="q23c">C) Host-Only Adapter</label></div>
+      <div class="option"><input type="radio" name="q23" id="q23d"><label for="q23d">D) Internal Network</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q24 <span class="required-star">*</span></div><div class="q-text">Which VirtualBox network adapter is created on the host system when using Host-Only networking?</div><div class="options">
+      <div class="option"><input type="radio" name="q24" id="q24a"><label for="q24a">A) eth0 virtual interface</label></div>
+      <div class="option"><input type="radio" name="q24" id="q24b"><label for="q24b">B) VirtualBox Host-Only Ethernet Adapter (vboxnet0)</label></div>
+      <div class="option"><input type="radio" name="q24" id="q24c"><label for="q24c">C) A TAP interface</label></div>
+      <div class="option"><input type="radio" name="q24" id="q24d"><label for="q24d">D) A loopback adapter</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q25 <span class="required-star">*</span></div><div class="q-text">In VirtualBox, which network mode supports port forwarding rules to allow external access to specific VM services?</div><div class="options">
+      <div class="option"><input type="radio" name="q25" id="q25a"><label for="q25a">A) Bridged Adapter</label></div>
+      <div class="option"><input type="radio" name="q25" id="q25b"><label for="q25b">B) Internal Network</label></div>
+      <div class="option"><input type="radio" name="q25" id="q25c"><label for="q25c">C) Host-Only Adapter</label></div>
+      <div class="option"><input type="radio" name="q25" id="q25d"><label for="q25d">D) NAT</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q26 <span class="required-star">*</span></div><div class="q-text">What IP range does VirtualBox's default NAT adapter typically assign to VMs?</div><div class="options">
+      <div class="option"><input type="radio" name="q26" id="q26a"><label for="q26a">A) 192.168.1.0/24</label></div>
+      <div class="option"><input type="radio" name="q26" id="q26b"><label for="q26b">B) 10.0.2.0/24</label></div>
+      <div class="option"><input type="radio" name="q26" id="q26c"><label for="q26c">C) 172.16.0.0/16</label></div>
+      <div class="option"><input type="radio" name="q26" id="q26d"><label for="q26d">D) 169.254.0.0/16</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q27 <span class="required-star">*</span></div><div class="q-text">Which VirtualBox network type is best for running a multi-VM pentesting lab where VMs communicate with each other AND with the host?</div><div class="options">
+      <div class="option"><input type="radio" name="q27" id="q27a"><label for="q27a">A) Internal Network</label></div>
+      <div class="option"><input type="radio" name="q27" id="q27b"><label for="q27b">B) NAT</label></div>
+      <div class="option"><input type="radio" name="q27" id="q27c"><label for="q27c">C) Host-Only Adapter</label></div>
+      <div class="option"><input type="radio" name="q27" id="q27d"><label for="q27d">D) Bridged Adapter</label></div>
+    </div></div>
+  </div>
+
+  <!-- SECTION 3: VULNERABLE BOXES & CTF CONCEPTS -->
+  <div class="card">
+    <div class="section-title">Section 3: Vulnerable Boxes &amp; CTF Concepts <span style="font-weight:400;font-size:13px;color:#5f6368;">(Q28 &ndash; Q40)</span></div>
+
+    <div class="question"><div class="q-label">Q28 <span class="required-star">*</span></div><div class="q-text">Metasploitable2 is an intentionally vulnerable Linux VM. Which service running on port 21 is commonly exploited for anonymous login?</div><div class="options">
+      <div class="option"><input type="radio" name="q28" id="q28a"><label for="q28a">A) SSH</label></div>
+      <div class="option"><input type="radio" name="q28" id="q28b"><label for="q28b">B) Telnet</label></div>
+      <div class="option"><input type="radio" name="q28" id="q28c"><label for="q28c">C) vsftpd (FTP)</label></div>
+      <div class="option"><input type="radio" name="q28" id="q28d"><label for="q28d">D) HTTP</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q29 <span class="required-star">*</span></div><div class="q-text">DVWA (Damn Vulnerable Web Application) is used primarily to practice which type of security testing?</div><div class="options">
+      <div class="option"><input type="radio" name="q29" id="q29a"><label for="q29a">A) Network packet analysis</label></div>
+      <div class="option"><input type="radio" name="q29" id="q29b"><label for="q29b">B) Web application penetration testing</label></div>
+      <div class="option"><input type="radio" name="q29" id="q29c"><label for="q29c">C) Wireless security cracking</label></div>
+      <div class="option"><input type="radio" name="q29" id="q29d"><label for="q29d">D) Binary exploitation</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q30 <span class="required-star">*</span></div><div class="q-text">Which Metasploit module category is used to gain initial access to a target system?</div><div class="options">
+      <div class="option"><input type="radio" name="q30" id="q30a"><label for="q30a">A) Auxiliary</label></div>
+      <div class="option"><input type="radio" name="q30" id="q30b"><label for="q30b">B) Post</label></div>
+      <div class="option"><input type="radio" name="q30" id="q30c"><label for="q30c">C) Exploit</label></div>
+      <div class="option"><input type="radio" name="q30" id="q30d"><label for="q30d">D) Payload</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q31 <span class="required-star">*</span></div><div class="q-text">What does 'CVE' stand for in the context of vulnerability databases?</div><div class="options">
+      <div class="option"><input type="radio" name="q31" id="q31a"><label for="q31a">A) Common Vulnerability Exploit</label></div>
+      <div class="option"><input type="radio" name="q31" id="q31b"><label for="q31b">B) Cyber Vulnerability Enumeration</label></div>
+      <div class="option"><input type="radio" name="q31" id="q31c"><label for="q31c">C) Common Vulnerabilities and Exposures</label></div>
+      <div class="option"><input type="radio" name="q31" id="q31d"><label for="q31d">D) Critical Vulnerability Entry</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q32 <span class="required-star">*</span></div><div class="q-text">In a SQL injection attack, what does the payload ' OR '1'='1 typically achieve?</div><div class="options">
+      <div class="option"><input type="radio" name="q32" id="q32a"><label for="q32a">A) Drops the database</label></div>
+      <div class="option"><input type="radio" name="q32" id="q32b"><label for="q32b">B) Bypasses authentication by making the WHERE clause always true</label></div>
+      <div class="option"><input type="radio" name="q32" id="q32c"><label for="q32c">C) Retrieves all table names</label></div>
+      <div class="option"><input type="radio" name="q32" id="q32d"><label for="q32d">D) Creates a new admin user</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q33 <span class="required-star">*</span></div><div class="q-text">What type of vulnerability allows an attacker to inject client-side scripts into web pages viewed by other users?</div><div class="options">
+      <div class="option"><input type="radio" name="q33" id="q33a"><label for="q33a">A) SQL Injection</label></div>
+      <div class="option"><input type="radio" name="q33" id="q33b"><label for="q33b">B) Cross-Site Scripting (XSS)</label></div>
+      <div class="option"><input type="radio" name="q33" id="q33c"><label for="q33c">C) Command Injection</label></div>
+      <div class="option"><input type="radio" name="q33" id="q33d"><label for="q33d">D) Path Traversal</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q34 <span class="required-star">*</span></div><div class="q-text">Which tool is commonly used for network scanning and port discovery in CTF and pentesting?</div><div class="options">
+      <div class="option"><input type="radio" name="q34" id="q34a"><label for="q34a">A) Wireshark</label></div>
+      <div class="option"><input type="radio" name="q34" id="q34b"><label for="q34b">B) Nmap</label></div>
+      <div class="option"><input type="radio" name="q34" id="q34c"><label for="q34c">C) Burp Suite</label></div>
+      <div class="option"><input type="radio" name="q34" id="q34d"><label for="q34d">D) Netcat</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q35 <span class="required-star">*</span></div><div class="q-text">What is a 'reverse shell' in the context of exploitation?</div><div class="options">
+      <div class="option"><input type="radio" name="q35" id="q35a"><label for="q35a">A) A shell that reverses text output</label></div>
+      <div class="option"><input type="radio" name="q35" id="q35b"><label for="q35b">B) A connection where the victim machine connects back to the attacker</label></div>
+      <div class="option"><input type="radio" name="q35" id="q35c"><label for="q35c">C) A shell accessed via SSH reverse tunnel</label></div>
+      <div class="option"><input type="radio" name="q35" id="q35d"><label for="q35d">D) A shell that runs commands in reverse order</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q36 <span class="required-star">*</span></div><div class="q-text">VulnHub is a platform that provides:</div><div class="options">
+      <div class="option"><input type="radio" name="q36" id="q36a"><label for="q36a">A) Live CTF competitions only</label></div>
+      <div class="option"><input type="radio" name="q36" id="q36b"><label for="q36b">B) Cloud-based hacking labs</label></div>
+      <div class="option"><input type="radio" name="q36" id="q36c"><label for="q36c">C) Downloadable vulnerable virtual machines for offline practice</label></div>
+      <div class="option"><input type="radio" name="q36" id="q36d"><label for="q36d">D) A bug bounty program</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q37 <span class="required-star">*</span></div><div class="q-text">What is 'privilege escalation' in the context of a compromised system?</div><div class="options">
+      <div class="option"><input type="radio" name="q37" id="q37a"><label for="q37a">A) Gaining access to more network hosts</label></div>
+      <div class="option"><input type="radio" name="q37" id="q37b"><label for="q37b">B) Escalating from a low-privilege user account to higher privileges (e.g., root/admin)</label></div>
+      <div class="option"><input type="radio" name="q37" id="q37c"><label for="q37c">C) Increasing network bandwidth</label></div>
+      <div class="option"><input type="radio" name="q37" id="q37d"><label for="q37d">D) Elevating firewall rules</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q38 <span class="required-star">*</span></div><div class="q-text">What does the Nmap flag '-sV' do when scanning a target?</div><div class="options">
+      <div class="option"><input type="radio" name="q38" id="q38a"><label for="q38a">A) Performs a stealth SYN scan</label></div>
+      <div class="option"><input type="radio" name="q38" id="q38b"><label for="q38b">B) Detects service versions running on open ports</label></div>
+      <div class="option"><input type="radio" name="q38" id="q38c"><label for="q38c">C) Scans all 65535 ports</label></div>
+      <div class="option"><input type="radio" name="q38" id="q38d"><label for="q38d">D) Enables verbose output</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q39 <span class="required-star">*</span></div><div class="q-text">Which DVWA security level disables most protections to make vulnerabilities easiest to exploit for beginners?</div><div class="options">
+      <div class="option"><input type="radio" name="q39" id="q39a"><label for="q39a">A) Medium</label></div>
+      <div class="option"><input type="radio" name="q39" id="q39b"><label for="q39b">B) High</label></div>
+      <div class="option"><input type="radio" name="q39" id="q39c"><label for="q39c">C) Low</label></div>
+      <div class="option"><input type="radio" name="q39" id="q39d"><label for="q39d">D) Impossible</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q40 <span class="required-star">*</span></div><div class="q-text">What is the primary purpose of Burp Suite in web application security testing?</div><div class="options">
+      <div class="option"><input type="radio" name="q40" id="q40a"><label for="q40a">A) Port scanning and enumeration</label></div>
+      <div class="option"><input type="radio" name="q40" id="q40b"><label for="q40b">B) Intercepting and manipulating HTTP/HTTPS traffic</label></div>
+      <div class="option"><input type="radio" name="q40" id="q40c"><label for="q40c">C) Password cracking</label></div>
+      <div class="option"><input type="radio" name="q40" id="q40d"><label for="q40d">D) Network packet capture</label></div>
+    </div></div>
+  </div>
+
+  <!-- SECTION 4: BASIC LINUX COMMANDS -->
+  <div class="card">
+    <div class="section-title">Section 4: Basic Linux Commands <span style="font-weight:400;font-size:13px;color:#5f6368;">(Q41 &ndash; Q52)</span></div>
+
+    <div class="question"><div class="q-label">Q41 <span class="required-star">*</span></div><div class="q-text">Which command displays the current working directory in Linux?</div><div class="options">
+      <div class="option"><input type="radio" name="q41" id="q41a"><label for="q41a">A) dir</label></div>
+      <div class="option"><input type="radio" name="q41" id="q41b"><label for="q41b">B) cwd</label></div>
+      <div class="option"><input type="radio" name="q41" id="q41c"><label for="q41c">C) pwd</label></div>
+      <div class="option"><input type="radio" name="q41" id="q41d"><label for="q41d">D) ls -d</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q42 <span class="required-star">*</span></div><div class="q-text">What does the command 'chmod 755 file.sh' do?</div><div class="options">
+      <div class="option"><input type="radio" name="q42" id="q42a"><label for="q42a">A) Makes the file readable only by the owner</label></div>
+      <div class="option"><input type="radio" name="q42" id="q42b"><label for="q42b">B) Gives the owner rwx permissions and group/others r-x permissions</label></div>
+      <div class="option"><input type="radio" name="q42" id="q42c"><label for="q42c">C) Removes all permissions from the file</label></div>
+      <div class="option"><input type="radio" name="q42" id="q42d"><label for="q42d">D) Makes the file executable by the owner only</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q43 <span class="required-star">*</span></div><div class="q-text">Which command is used to search for a pattern inside files in Linux?</div><div class="options">
+      <div class="option"><input type="radio" name="q43" id="q43a"><label for="q43a">A) find</label></div>
+      <div class="option"><input type="radio" name="q43" id="q43b"><label for="q43b">B) locate</label></div>
+      <div class="option"><input type="radio" name="q43" id="q43c"><label for="q43c">C) grep</label></div>
+      <div class="option"><input type="radio" name="q43" id="q43d"><label for="q43d">D) awk</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q44 <span class="required-star">*</span></div><div class="q-text">What does the 'ls -la' command show that 'ls' alone does not?</div><div class="options">
+      <div class="option"><input type="radio" name="q44" id="q44a"><label for="q44a">A) Only file sizes</label></div>
+      <div class="option"><input type="radio" name="q44" id="q44b"><label for="q44b">B) Long-format details including hidden files, permissions, owner, and size</label></div>
+      <div class="option"><input type="radio" name="q44" id="q44c"><label for="q44c">C) Only hidden files</label></div>
+      <div class="option"><input type="radio" name="q44" id="q44d"><label for="q44d">D) Files sorted by modification time</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q45 <span class="required-star">*</span></div><div class="q-text">Which command is used to change file ownership in Linux?</div><div class="options">
+      <div class="option"><input type="radio" name="q45" id="q45a"><label for="q45a">A) chmod</label></div>
+      <div class="option"><input type="radio" name="q45" id="q45b"><label for="q45b">B) chown</label></div>
+      <div class="option"><input type="radio" name="q45" id="q45c"><label for="q45c">C) chgrp</label></div>
+      <div class="option"><input type="radio" name="q45" id="q45d"><label for="q45d">D) usermod</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q46 <span class="required-star">*</span></div><div class="q-text">What does 'sudo !!' do in a Linux terminal?</div><div class="options">
+      <div class="option"><input type="radio" name="q46" id="q46a"><label for="q46a">A) Repeats the last command with sudo privileges</label></div>
+      <div class="option"><input type="radio" name="q46" id="q46b"><label for="q46b">B) Shows the last 10 commands</label></div>
+      <div class="option"><input type="radio" name="q46" id="q46c"><label for="q46c">C) Negates the previous command</label></div>
+      <div class="option"><input type="radio" name="q46" id="q46d"><label for="q46d">D) Runs a background job as root</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q47 <span class="required-star">*</span></div><div class="q-text">Which command displays running processes in real-time with CPU and memory usage?</div><div class="options">
+      <div class="option"><input type="radio" name="q47" id="q47a"><label for="q47a">A) ps aux</label></div>
+      <div class="option"><input type="radio" name="q47" id="q47b"><label for="q47b">B) jobs</label></div>
+      <div class="option"><input type="radio" name="q47" id="q47c"><label for="q47c">C) top</label></div>
+      <div class="option"><input type="radio" name="q47" id="q47d"><label for="q47d">D) proc</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q48 <span class="required-star">*</span></div><div class="q-text">What is the function of the 'netstat -tulnp' command?</div><div class="options">
+      <div class="option"><input type="radio" name="q48" id="q48a"><label for="q48a">A) Displays all active network connections with process IDs</label></div>
+      <div class="option"><input type="radio" name="q48" id="q48b"><label for="q48b">B) Shows only UDP connections</label></div>
+      <div class="option"><input type="radio" name="q48" id="q48c"><label for="q48c">C) Displays listening TCP/UDP ports along with the owning process</label></div>
+      <div class="option"><input type="radio" name="q48" id="q48d"><label for="q48d">D) Flushes the network statistics cache</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q49 <span class="required-star">*</span></div><div class="q-text">Which command would you use to recursively copy a directory and its contents?</div><div class="options">
+      <div class="option"><input type="radio" name="q49" id="q49a"><label for="q49a">A) cp file dir/</label></div>
+      <div class="option"><input type="radio" name="q49" id="q49b"><label for="q49b">B) cp -r source/ dest/</label></div>
+      <div class="option"><input type="radio" name="q49" id="q49c"><label for="q49c">C) mv -r source/ dest/</label></div>
+      <div class="option"><input type="radio" name="q49" id="q49d"><label for="q49d">D) rsync source/</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q50 <span class="required-star">*</span></div><div class="q-text">What does 'cat /etc/passwd' display?</div><div class="options">
+      <div class="option"><input type="radio" name="q50" id="q50a"><label for="q50a">A) Encrypted user passwords</label></div>
+      <div class="option"><input type="radio" name="q50" id="q50b"><label for="q50b">B) User account information including usernames, UIDs, home directories, and default shells</label></div>
+      <div class="option"><input type="radio" name="q50" id="q50c"><label for="q50c">C) System hardware information</label></div>
+      <div class="option"><input type="radio" name="q50" id="q50d"><label for="q50d">D) Network configuration</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q51 <span class="required-star">*</span></div><div class="q-text">Which command finds all files with SUID bit set on the system?</div><div class="options">
+      <div class="option"><input type="radio" name="q51" id="q51a"><label for="q51a">A) find / -perm -u=s -type f 2>/dev/null</label></div>
+      <div class="option"><input type="radio" name="q51" id="q51b"><label for="q51b">B) ls -la / | grep s</label></div>
+      <div class="option"><input type="radio" name="q51" id="q51c"><label for="q51c">C) grep -r SUID /etc</label></div>
+      <div class="option"><input type="radio" name="q51" id="q51d"><label for="q51d">D) chmod -s / -find</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q52 <span class="required-star">*</span></div><div class="q-text">What is the purpose of the 'which' command in Linux?</div><div class="options">
+      <div class="option"><input type="radio" name="q52" id="q52a"><label for="q52a">A) Searches file contents for a keyword</label></div>
+      <div class="option"><input type="radio" name="q52" id="q52b"><label for="q52b">B) Displays the full path of a command's executable</label></div>
+      <div class="option"><input type="radio" name="q52" id="q52c"><label for="q52c">C) Shows which user is logged in</label></div>
+      <div class="option"><input type="radio" name="q52" id="q52d"><label for="q52d">D) Lists which files are open</label></div>
+    </div></div>
+  </div>
+
+  <!-- SECTION 5: CORE LINUX DIRECTORIES -->
+  <div class="card">
+    <div class="section-title">Section 5: Core Linux Directories <span style="font-weight:400;font-size:13px;color:#5f6368;">(Q53 &ndash; Q65)</span></div>
+
+    <div class="question"><div class="q-label">Q53 <span class="required-star">*</span></div><div class="q-text">What is the purpose of the '/etc' directory in Linux?</div><div class="options">
+      <div class="option"><input type="radio" name="q53" id="q53a"><label for="q53a">A) Stores user home directories</label></div>
+      <div class="option"><input type="radio" name="q53" id="q53b"><label for="q53b">B) Contains system-wide configuration files and scripts</label></div>
+      <div class="option"><input type="radio" name="q53" id="q53c"><label for="q53c">C) Holds temporary files</label></div>
+      <div class="option"><input type="radio" name="q53" id="q53d"><label for="q53d">D) Stores kernel modules</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q54 <span class="required-star">*</span></div><div class="q-text">Which directory contains the Linux kernel, bootloader configuration, and initial RAM disk?</div><div class="options">
+      <div class="option"><input type="radio" name="q54" id="q54a"><label for="q54a">A) /bin</label></div>
+      <div class="option"><input type="radio" name="q54" id="q54b"><label for="q54b">B) /sbin</label></div>
+      <div class="option"><input type="radio" name="q54" id="q54c"><label for="q54c">C) /boot</label></div>
+      <div class="option"><input type="radio" name="q54" id="q54d"><label for="q54d">D) /lib</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q55 <span class="required-star">*</span></div><div class="q-text">Where are device files (representing hardware devices) stored in Linux?</div><div class="options">
+      <div class="option"><input type="radio" name="q55" id="q55a"><label for="q55a">A) /sys</label></div>
+      <div class="option"><input type="radio" name="q55" id="q55b"><label for="q55b">B) /proc</label></div>
+      <div class="option"><input type="radio" name="q55" id="q55c"><label for="q55c">C) /dev</label></div>
+      <div class="option"><input type="radio" name="q55" id="q55d"><label for="q55d">D) /lib</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q56 <span class="required-star">*</span></div><div class="q-text">The '/proc' directory in Linux is a:</div><div class="options">
+      <div class="option"><input type="radio" name="q56" id="q56a"><label for="q56a">A) Directory storing process log files</label></div>
+      <div class="option"><input type="radio" name="q56" id="q56b"><label for="q56b">B) Virtual filesystem providing information about running processes and the kernel</label></div>
+      <div class="option"><input type="radio" name="q56" id="q56c"><label for="q56c">C) Directory for program configuration files</label></div>
+      <div class="option"><input type="radio" name="q56" id="q56d"><label for="q56d">D) Partition for process management binaries</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q57 <span class="required-star">*</span></div><div class="q-text">What type of files are stored in '/bin' (or '/usr/bin' in modern distros)?</div><div class="options">
+      <div class="option"><input type="radio" name="q57" id="q57a"><label for="q57a">A) Kernel modules</label></div>
+      <div class="option"><input type="radio" name="q57" id="q57b"><label for="q57b">B) Essential command binaries available to all users (ls, cat, cp, etc.)</label></div>
+      <div class="option"><input type="radio" name="q57" id="q57c"><label for="q57c">C) System administration binaries only for root</label></div>
+      <div class="option"><input type="radio" name="q57" id="q57d"><label for="q57d">D) Library files shared across applications</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q58 <span class="required-star">*</span></div><div class="q-text">Which directory is used to store variable data that changes during normal system operation (logs, spool, databases)?</div><div class="options">
+      <div class="option"><input type="radio" name="q58" id="q58a"><label for="q58a">A) /tmp</label></div>
+      <div class="option"><input type="radio" name="q58" id="q58b"><label for="q58b">B) /usr</label></div>
+      <div class="option"><input type="radio" name="q58" id="q58c"><label for="q58c">C) /var</label></div>
+      <div class="option"><input type="radio" name="q58" id="q58d"><label for="q58d">D) /run</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q59 <span class="required-star">*</span></div><div class="q-text">What is the '/tmp' directory used for, and when is its content typically cleared?</div><div class="options">
+      <div class="option"><input type="radio" name="q59" id="q59a"><label for="q59a">A) Permanent user data; never cleared</label></div>
+      <div class="option"><input type="radio" name="q59" id="q59b"><label for="q59b">B) Temporary files; cleared on reboot (or by cron)</label></div>
+      <div class="option"><input type="radio" name="q59" id="q59c"><label for="q59c">C) Template files; cleared when new apps are installed</label></div>
+      <div class="option"><input type="radio" name="q59" id="q59d"><label for="q59d">D) Thumbnail cache; cleared weekly</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q60 <span class="required-star">*</span></div><div class="q-text">Which directory holds the home directories for regular users by default?</div><div class="options">
+      <div class="option"><input type="radio" name="q60" id="q60a"><label for="q60a">A) /root</label></div>
+      <div class="option"><input type="radio" name="q60" id="q60b"><label for="q60b">B) /users</label></div>
+      <div class="option"><input type="radio" name="q60" id="q60c"><label for="q60c">C) /home</label></div>
+      <div class="option"><input type="radio" name="q60" id="q60d"><label for="q60d">D) /usr</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q61 <span class="required-star">*</span></div><div class="q-text">What is stored in the '/lib' (or '/usr/lib') directory?</div><div class="options">
+      <div class="option"><input type="radio" name="q61" id="q61a"><label for="q61a">A) Log files for system libraries</label></div>
+      <div class="option"><input type="radio" name="q61" id="q61b"><label for="q61b">B) Shared libraries (.so files) required by binaries in /bin and /sbin</label></div>
+      <div class="option"><input type="radio" name="q61" id="q61c"><label for="q61c">C) Library source code for compilation</label></div>
+      <div class="option"><input type="radio" name="q61" id="q61d"><label for="q61d">D) License files for installed packages</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q62 <span class="required-star">*</span></div><div class="q-text">The '/usr' directory hierarchy in Linux is intended for:</div><div class="options">
+      <div class="option"><input type="radio" name="q62" id="q62a"><label for="q62a">A) User-specific configuration files</label></div>
+      <div class="option"><input type="radio" name="q62" id="q62b"><label for="q62b">B) Read-only user data, applications, and utilities installed system-wide</label></div>
+      <div class="option"><input type="radio" name="q62" id="q62c"><label for="q62c">C) Temporary user workspace</label></div>
+      <div class="option"><input type="radio" name="q62" id="q62d"><label for="q62d">D) USB device mount points</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q63 <span class="required-star">*</span></div><div class="q-text">Which directory in Linux is specifically the home directory of the root (superuser) account?</div><div class="options">
+      <div class="option"><input type="radio" name="q63" id="q63a"><label for="q63a">A) /home/root</label></div>
+      <div class="option"><input type="radio" name="q63" id="q63b"><label for="q63b">B) /root</label></div>
+      <div class="option"><input type="radio" name="q63" id="q63c"><label for="q63c">C) /home</label></div>
+      <div class="option"><input type="radio" name="q63" id="q63d"><label for="q63d">D) /admin</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q64 <span class="required-star">*</span></div><div class="q-text">What is the purpose of the '/mnt' and '/media' directories?</div><div class="options">
+      <div class="option"><input type="radio" name="q64" id="q64a"><label for="q64a">A) Both store kernel modules</label></div>
+      <div class="option"><input type="radio" name="q64" id="q64b"><label for="q64b">B) /mnt is for manual temporary mounts; /media is for auto-mounted removable devices</label></div>
+      <div class="option"><input type="radio" name="q64" id="q64c"><label for="q64c">C) /mnt is for network drives; /media is for memory management</label></div>
+      <div class="option"><input type="radio" name="q64" id="q64d"><label for="q64d">D) Both are used for application installation</label></div>
+    </div></div>
+
+    <div class="question"><div class="q-label">Q65 <span class="required-star">*</span></div><div class="q-text">Which file in '/etc' contains the system's hostname configuration?</div><div class="options">
+      <div class="option"><input type="radio" name="q65" id="q65a"><label for="q65a">A) /etc/hosts</label></div>
+      <div class="option"><input type="radio" name="q65" id="q65b"><label for="q65b">B) /etc/hostname</label></div>
+      <div class="option"><input type="radio" name="q65" id="q65c"><label for="q65c">C) /etc/network</label></div>
+      <div class="option"><input type="radio" name="q65" id="q65d"><label for="q65d">D) /etc/resolv.conf</label></div>
+    </div></div>
+  </div>
+
+
+
+  <!-- SUBMIT -->
+  <div class="card" style="text-align:center;">
+    <button class="btn-submit" id="submitBtn">Check Answers</button>
+    <p id="scoreDisplay" style="margin-top:12px;font-size:16px;font-weight:500;"></p>
+    <p style="margin-top:8px;font-size:12px;color:#5f6368;">Select your answers and click "Check Answers" to see your score.</p>
+  </div>
+
+  <div class="footer">Networking &amp; Linux MCQ &middot; 65 Questions &middot; Good luck!</div>
+</div>
+<script>
+const answers = {
+  q1:'c',q2:'a',q3:'c',q4:'c',q5:'d',q6:'c',q7:'b',q8:'b',q9:'c',q10:'b',
+  q11:'b',q12:'c',q13:'c',q14:'c',q15:'b',q16:'c',q17:'a',q18:'c',q19:'d',q20:'b',
+  q21:'b',q22:'b',q23:'c',q24:'b',q25:'d',q26:'b',q27:'c',q28:'c',q29:'b',q30:'c',
+  q31:'c',q32:'b',q33:'b',q34:'b',q35:'b',q36:'c',q37:'b',q38:'b',q39:'c',q40:'b',
+  q41:'c',q42:'b',q43:'c',q44:'b',q45:'b',q46:'a',q47:'c',q48:'c',q49:'b',q50:'b',
+  q51:'a',q52:'b',q53:'b',q54:'c',q55:'c',q56:'b',q57:'b',q58:'c',q59:'b',q60:'c',
+  q61:'b',q62:'b',q63:'b',q64:'b',q65:'b'
+};
+
+document.getElementById('submitBtn').addEventListener('click', function() {
+  let correct = 0, total = 65;
+  for (let i = 1; i <= total; i++) {
+    const radios = document.getElementsByName('q' + i);
+    let selected = null;
+    for (const r of radios) {
+      if (r.checked) { selected = r; break; }
+    }
+    const qDiv = radios[0].closest('.question');
+    qDiv.querySelectorAll('.option').forEach(o => o.style.background = '');
+    if (selected) {
+      const letter = selected.id.slice(-1);
+      const expected = answers['q' + i];
+      if (letter === expected) {
+        selected.closest('.option').style.background = '#cefad0';
+        correct++;
+      } else {
+        selected.closest('.option').style.background = '#fce8e6';
+        qDiv.querySelector('.option input[id$="' + expected + '"]').closest('.option').style.background = '#cefad0';
+      }
+    }
+  }
+  document.getElementById('scoreDisplay').textContent = 'Score: ' + correct + ' / ' + total + ' (' + Math.round(correct/total*100) + '%)';
+});
+</script>
+</body>
+</html>

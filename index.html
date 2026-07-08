@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fortify - Password Tools</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    ::selection { background-color: rgba(16, 185, 129, 0.3); }
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; 
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-200 font-sans p-4 md:p-8 flex items-center justify-center">
+
+  <div class="w-full max-w-2xl bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col">
+    
+    <!-- Header -->
+    <div class="bg-slate-900 border-b border-slate-800 p-6 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+        <i data-lucide="lock"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-white tracking-tight">Fortify</h1>
+        <p class="text-sm text-slate-400">Advanced Password Security Suite</p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex border-b border-slate-800">
+      <button id="tab-analyzer" class="flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/5">
+        <i data-lucide="shield" class="w-4 h-4"></i>
+        Strength Analyzer
+      </button>
+      <button id="tab-generator" class="flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+        <i data-lucide="key-round" class="w-4 h-4"></i>
+        Password Generator
+      </button>
+    </div>
+
+    <!-- Content Area -->
+    <div class="p-6 md:p-8 relative min-h-[500px]">
+      
+      <!-- ==================== ANALYZER VIEW ==================== -->
+      <div id="view-analyzer" class="space-y-8 fade-in block">
+        <div class="relative">
+          <input
+            type="password"
+            id="analyzer-input"
+            placeholder="Type a password to test..."
+            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-4 pr-12 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-lg"
+          />
+          <button id="analyzer-toggle-visibility" type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
+            <i data-lucide="eye" id="eye-icon"></i>
+          </button>
+        </div>
+
+        <!-- Strength Indicator -->
+        <div class="bg-slate-950/50 rounded-2xl p-6 border border-slate-800/50">
+          <div class="flex justify-between items-end mb-4">
+            <div class="flex items-center gap-3">
+              <div id="analyzer-icon">
+              </div>
+              <div>
+                <p class="text-sm text-slate-400 mb-1">Strength Level</p>
+                <h2 id="analyzer-label" class="text-2xl font-bold text-slate-400">Enter a password</h2>
+              </div>
+            </div>
+            <span id="analyzer-score-text" class="text-xl font-mono text-slate-300">0%</span>
+          </div>
+          
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden flex">
+            <div id="analyzer-progress" class="h-full bg-slate-700 transition-all duration-500 ease-out" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Requirements Checklist</h3>
+            <div id="req-length" class="flex items-center gap-2 text-sm text-slate-500"></div>
+            <div id="req-uppercase" class="flex items-center gap-2 text-sm text-slate-500"></div>
+            <div id="req-lowercase" class="flex items-center gap-2 text-sm text-slate-500"></div>
+            <div id="req-numbers" class="flex items-center gap-2 text-sm text-slate-500"></div>
+            <div id="req-symbols" class="flex items-center gap-2 text-sm text-slate-500"></div>
+          </div>
+
+          <div id="feedback-container" class="space-y-3 hidden">
+            <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Security Insights</h3>
+            <ul id="feedback-list" class="space-y-2">
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== GENERATOR VIEW ==================== -->
+      <div id="view-generator" class="space-y-8 fade-in hidden">
+        <div class="relative group">
+          <div id="gen-output" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-emerald-400 break-all min-h-[5rem] flex items-center">
+          </div>
+          
+          <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+            <button id="gen-refresh" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all" title="Generate New">
+              <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+            </button>
+            <button id="gen-copy" class="flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-slate-800 text-slate-300 hover:bg-slate-700">
+              <span id="gen-copy-icon"></span>
+              <span id="gen-copy-text" class="hidden md:inline text-sm">Copy</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-slate-950/50 p-6 rounded-2xl border border-slate-800/50 space-y-6">
+          <div class="flex justify-between items-center mb-2">
+            <label class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Password Length</label>
+            <span id="gen-length-display" class="text-2xl font-mono font-bold text-white bg-slate-800 px-3 py-1 rounded-lg">16</span>
+          </div>
+          <input type="range" id="gen-length" min="8" max="128" value="16" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+          <div class="flex justify-between text-xs font-mono text-slate-500">
+            <span>8</span>
+            <span>64</span>
+            <span>128</span>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Character Types</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label for="opt-uppercase" id="lbl-uppercase" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30">
+              <div>
+                <div class="font-medium text-emerald-400 lbl-title">Uppercase Letters</div>
+                <div class="text-xs text-slate-500 font-mono mt-0.5">(A-Z)</div>
+              </div>
+              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950">
+                <i data-lucide="check" class="w-4 h-4"></i>
+              </div>
+              <input type="checkbox" id="opt-uppercase" class="sr-only opt-checkbox" checked />
+            </label>
+
+            <label for="opt-lowercase" id="lbl-lowercase" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30">
+              <div>
+                <div class="font-medium text-emerald-400 lbl-title">Lowercase Letters</div>
+                <div class="text-xs text-slate-500 font-mono mt-0.5">(a-z)</div>
+              </div>
+              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950">
+                <i data-lucide="check" class="w-4 h-4"></i>
+              </div>
+              <input type="checkbox" id="opt-lowercase" class="sr-only opt-checkbox" checked />
+            </label>
+
+            <label for="opt-numbers" id="lbl-numbers" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30">
+              <div>
+                <div class="font-medium text-emerald-400 lbl-title">Numbers</div>
+                <div class="text-xs text-slate-500 font-mono mt-0.5">(0-9)</div>
+              </div>
+              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950">
+                <i data-lucide="check" class="w-4 h-4"></i>
+              </div>
+              <input type="checkbox" id="opt-numbers" class="sr-only opt-checkbox" checked />
+            </label>
+
+            <label for="opt-symbols" id="lbl-symbols" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30">
+              <div>
+                <div class="font-medium text-emerald-400 lbl-title">Special Symbols</div>
+                <div class="text-xs text-slate-500 font-mono mt-0.5">(!@#$)</div>
+              </div>
+              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950">
+                <i data-lucide="check" class="w-4 h-4"></i>
+              </div>
+              <input type="checkbox" id="opt-symbols" class="sr-only opt-checkbox" checked />
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const icons = {
+      shield: `<svg class="w-6 h-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg>`,
+      shieldCheckE: `<svg class="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>`,
+      shieldCheckT: `<svg class="w-6 h-6 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>`,
+      shieldAlertR: `<svg class="w-6 h-6 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>`,
+      shieldAlertO: `<svg class="w-6 h-6 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>`,
+      alertTriangle: `<svg class="w-6 h-6 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>`,
+      alertTriangleSmall: `<svg class="w-4 h-4 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>`,
+      checkCircle: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><path d="m9 11 3 3L22 4"></path></svg>`,
+      xCircle: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>`,
+      copy: `<svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>`,
+      check: `<svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>`
+    };
+
+    const tabAnalyzer = document.getElementById('tab-analyzer');
+    const tabGenerator = document.getElementById('tab-generator');
+    const viewAnalyzer = document.getElementById('view-analyzer');
+    const viewGenerator = document.getElementById('view-generator');
+
+    function switchTab(tab) {
+      if (tab === 'analyzer') {
+        viewAnalyzer.classList.remove('hidden');
+        viewGenerator.classList.add('hidden');
+        
+        tabAnalyzer.className = "flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/5";
+        tabGenerator.className = "flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
+      } else {
+        viewAnalyzer.classList.add('hidden');
+        viewGenerator.classList.remove('hidden');
+        
+        tabGenerator.className = "flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/5";
+        tabAnalyzer.className = "flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
+      }
+    }
+
+    tabAnalyzer.addEventListener('click', () => switchTab('analyzer'));
+    tabGenerator.addEventListener('click', () => switchTab('generator'));
+
+    const aInput = document.getElementById('analyzer-input');
+    const aToggleVis = document.getElementById('analyzer-toggle-visibility');
+    const aEyeIcon = document.getElementById('eye-icon');
+    const aIcon = document.getElementById('analyzer-icon');
+    const aLabel = document.getElementById('analyzer-label');
+    const aScoreText = document.getElementById('analyzer-score-text');
+    const aProgress = document.getElementById('analyzer-progress');
+    const fContainer = document.getElementById('feedback-container');
+    const fList = document.getElementById('feedback-list');
+
+    let showPassword = false;
+
+    aToggleVis.addEventListener('click', () => {
+      showPassword = !showPassword;
+      aInput.type = showPassword ? 'text' : 'password';
+      aEyeIcon.setAttribute('data-lucide', showPassword ? 'eye-off' : 'eye');
+      lucide.createIcons({ root: aToggleVis });
+    });
+
+    function setCriteria(id, label, met) {
+      const el = document.getElementById(`req-${id}`);
+      el.className = `flex items-center gap-2 text-sm ${met ? 'text-emerald-400' : 'text-slate-500'}`;
+      el.innerHTML = `${met ? icons.checkCircle : icons.xCircle} <span>${label}</span>`;
+    }
+
+    function analyzePassword(pwd) {
+      if (!pwd) {
+        aIcon.innerHTML = icons.shield;
+        aLabel.textContent = 'Waiting for input...';
+        aLabel.className = 'text-2xl font-bold text-slate-400';
+        aScoreText.textContent = '0%';
+        aProgress.style.width = '0%';
+        aProgress.className = 'h-full bg-slate-700 transition-all duration-500 ease-out';
+        
+        setCriteria('length', 'At least 8 characters', false);
+        setCriteria('uppercase', 'Uppercase letter', false);
+        setCriteria('lowercase', 'Lowercase letter', false);
+        setCriteria('numbers', 'Number (0-9)', false);
+        setCriteria('symbols', 'Symbol (!@#$...)', false);
+        fContainer.classList.add('hidden');
+        return;
+      }
+
+      let score = 0;
+      const feedback = [];
+      
+      const hasLength = pwd.length >= 8;
+      const hasLongLength = pwd.length >= 12;
+      const hasUppercase = /[A-Z]/.test(pwd);
+      const hasLowercase = /[a-z]/.test(pwd);
+      const hasNumbers = /[0-9]/.test(pwd);
+      const hasSymbols = /[^A-Za-z0-9]/.test(pwd);
+
+      score += Math.min(pwd.length * 4, 40);
+      if (hasUppercase) score += 10;
+      if (hasLowercase) score += 10;
+      if (hasNumbers) score += 10;
+      if (hasSymbols) score += 15;
+      
+      if (hasUppercase && hasLowercase && hasNumbers && hasSymbols) score += 15;
+
+      if (/^[A-Za-z]+$/.test(pwd)) {
+        score -= 15;
+        feedback.push("Contains only letters. Add numbers and symbols.");
+      }
+      if (/^[0-9]+$/.test(pwd)) {
+        score -= 15;
+        feedback.push("Contains only numbers. Add letters and symbols.");
+      }
+      if (/(.)\1{2,}/.test(pwd)) {
+        score -= 15;
+        feedback.push("Avoid repeated characters (e.g., 'aaa').");
+      }
+      if (/(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)/i.test(pwd)) {
+        score -= 10;
+        feedback.push("Avoid sequential characters (e.g., 'abc').");
+      }
+      if (/(123|234|345|456|567|678|789|890)/.test(pwd)) {
+        score -= 10;
+        feedback.push("Avoid sequential numbers (e.g., '123').");
+      }
+
+      score = Math.max(0, Math.min(score, 100));
+
+      if (!hasLength) feedback.push("Password should be at least 8 characters long.");
+      else if (!hasLongLength) feedback.push("Consider making it 12+ characters for extra security.");
+
+      let label = 'Very Weak';
+      let colorClass = 'bg-red-500';
+      let textClass = 'text-red-400';
+      let iconHtml = icons.shieldAlertR;
+
+      if (score > 80) {
+        label = 'Very Strong'; colorClass = 'bg-emerald-500'; textClass = 'text-emerald-400'; iconHtml = icons.shieldCheckE;
+      } else if (score > 60) {
+        label = 'Strong'; colorClass = 'bg-teal-500'; textClass = 'text-teal-400'; iconHtml = icons.shieldCheckT;
+      } else if (score > 40) {
+        label = 'Moderate'; colorClass = 'bg-amber-500'; textClass = 'text-amber-400'; iconHtml = icons.alertTriangle;
+      } else if (score > 20) {
+        label = 'Weak'; colorClass = 'bg-orange-500'; textClass = 'text-orange-400'; iconHtml = icons.shieldAlertO;
+      }
+
+      aIcon.innerHTML = iconHtml;
+      aLabel.textContent = label;
+      aLabel.className = `text-2xl font-bold ${textClass}`;
+      aScoreText.textContent = `${score}%`;
+      
+      aProgress.className = `h-full ${colorClass} transition-all duration-500 ease-out`;
+      aProgress.style.width = `${score}%`;
+
+      setCriteria('length', 'At least 8 characters', hasLength);
+      setCriteria('uppercase', 'Uppercase letter', hasUppercase);
+      setCriteria('lowercase', 'Lowercase letter', hasLowercase);
+      setCriteria('numbers', 'Number (0-9)', hasNumbers);
+      setCriteria('symbols', 'Symbol (!@#$...)', hasSymbols);
+
+      if (feedback.length > 0) {
+        fContainer.classList.remove('hidden');
+        fList.innerHTML = feedback.map(msg => `
+          <li class="flex items-start gap-2 text-sm text-amber-400/90 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
+            ${icons.alertTriangleSmall}
+            <span>${msg}</span>
+          </li>
+        `).join('');
+      } else {
+        fContainer.classList.add('hidden');
+      }
+    }
+
+    aInput.addEventListener('input', (e) => analyzePassword(e.target.value));
+    
+    analyzePassword('');
+
+    let genOptions = { uppercase: true, lowercase: true, numbers: true, symbols: true };
+    const genOutput = document.getElementById('gen-output');
+    const genLength = document.getElementById('gen-length');
+    const genLenDisp = document.getElementById('gen-length-display');
+    const btnRefresh = document.getElementById('gen-refresh');
+    const btnCopy = document.getElementById('gen-copy');
+    const copyIcon = document.getElementById('gen-copy-icon');
+    const copyText = document.getElementById('gen-copy-text');
+
+    const checkboxes = document.querySelectorAll('.opt-checkbox');
+
+    function generatePassword() {
+      const length = parseInt(genLength.value);
+      const charSets = {
+        uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        lowercase: 'abcdefghijklmnopqrstuvwxyz',
+        numbers: '0123456789',
+        symbols: '!@#$%^&*()_+~`|}{[]:;?><,./-=',
+      };
+
+      let allowedChars = '';
+      let generatedPass = '';
+      const guaranteedChars = [];
+
+      Object.keys(genOptions).forEach(key => {
+        if (genOptions[key]) {
+          allowedChars += charSets[key];
+          guaranteedChars.push(charSets[key][Math.floor(Math.random() * charSets[key].length)]);
+        }
+      });
+
+      if (allowedChars.length === 0) {
+        genOutput.textContent = '';
+        return;
+      }
+
+      for (let i = 0; i < length - guaranteedChars.length; i++) {
+        generatedPass += allowedChars[Math.floor(Math.random() * allowedChars.length)];
+      }
+
+      let finalPassword = (generatedPass + guaranteedChars.join('')).split('');
+      for (let i = finalPassword.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [finalPassword[i], finalPassword[j]] = [finalPassword[j], finalPassword[i]];
+      }
+
+      genOutput.textContent = finalPassword.join('');
+      resetCopyButton();
+    }
+
+    function resetCopyButton() {
+      copyIcon.innerHTML = icons.copy;
+      copyText.textContent = 'Copy';
+      btnCopy.className = 'flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-slate-800 text-slate-300 hover:bg-slate-700';
+    }
+
+    function handleCopy() {
+      const pwd = genOutput.textContent;
+      if (!pwd || pwd === 'Select options to generate') return;
+
+      const textarea = document.createElement('textarea');
+      textarea.value = pwd;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      copyIcon.innerHTML = icons.check;
+      copyText.textContent = 'Copied';
+      btnCopy.className = 'flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-emerald-500/20 text-emerald-400';
+      
+      setTimeout(resetCopyButton, 2000);
+    }
+
+    function updateCheckboxUI(id, checked) {
+      const label = document.getElementById(`lbl-${id}`);
+      const title = label.querySelector('.lbl-title');
+      const box = label.querySelector('.chk-box');
+      
+      if (checked) {
+        label.className = "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30";
+        title.className = "font-medium text-emerald-400 lbl-title";
+        box.className = "chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950";
+      } else {
+        label.className = "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-slate-950 border-slate-800 hover:border-slate-700";
+        title.className = "font-medium text-slate-300 lbl-title";
+        box.className = "chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-slate-800 text-transparent";
+      }
+    }
+
+    genLength.addEventListener('input', (e) => {
+      genLenDisp.textContent = e.target.value;
+      generatePassword();
+    });
+
+    checkboxes.forEach(chk => {
+      chk.addEventListener('change', (e) => {
+        const id = e.target.id.replace('opt-', '');
+        
+        const activeCount = Object.values(genOptions).filter(Boolean).length;
+        if (activeCount === 1 && !e.target.checked) {
+          e.target.checked = true;
+          return;
+        }
+
+        genOptions[id] = e.target.checked;
+        updateCheckboxUI(id, e.target.checked);
+        generatePassword();
+      });
+    });
+
+    btnRefresh.addEventListener('click', generatePassword);
+    btnCopy.addEventListener('click', handleCopy);
+
+    resetCopyButton();
+    generatePassword();
+
+  </script>
+</body>
+</html>
