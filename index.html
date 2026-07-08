@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     ::selection { background-color: rgba(16, 185, 129, 0.3); }
     .fade-in { animation: fadeIn 0.3s ease-in-out; }
     @keyframes fadeIn {
@@ -17,14 +18,22 @@
       position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; 
       overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
     }
+    #matrixCanvas {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 0; pointer-events: none;
+    }
+    body { position: relative; }
+    .card-wrapper { position: relative; z-index: 1; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-200 font-sans p-4 md:p-8 flex items-center justify-center">
 
-  <div class="w-full max-w-2xl bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col">
+  <canvas id="matrixCanvas"></canvas>
+
+  <div class="card-wrapper w-full max-w-4xl bg-slate-900/60 backdrop-blur-lg rounded-3xl shadow-2xl border border-slate-700/30 overflow-hidden flex flex-col">
     
     <!-- Header -->
-    <div class="bg-slate-900 border-b border-slate-800 p-6 flex items-center gap-3">
+    <div class="bg-slate-900/80 border-b border-slate-700/50 p-6 flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
         <i data-lucide="lock"></i>
       </div>
@@ -35,8 +44,8 @@
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="flex border-b border-slate-800">
-      <button id="tab-analyzer" class="flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/5">
+    <div class="flex border-b border-slate-700/50">
+      <button id="tab-analyzer" class="flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/10">
         <i data-lucide="shield" class="w-4 h-4"></i>
         Strength Analyzer
       </button>
@@ -56,7 +65,7 @@
             type="password"
             id="analyzer-input"
             placeholder="Type a password to test..."
-            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-4 pr-12 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-lg"
+            class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-4 pr-12 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-lg"
           />
           <button id="analyzer-toggle-visibility" type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
             <i data-lucide="eye" id="eye-icon"></i>
@@ -64,7 +73,7 @@
         </div>
 
         <!-- Strength Indicator -->
-        <div class="bg-slate-950/50 rounded-2xl p-6 border border-slate-800/50">
+        <div class="bg-slate-950/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/30">
           <div class="flex justify-between items-end mb-4">
             <div class="flex items-center gap-3">
               <div id="analyzer-icon">
@@ -103,7 +112,7 @@
       <!-- ==================== GENERATOR VIEW ==================== -->
       <div id="view-generator" class="space-y-8 fade-in hidden">
         <div class="relative group">
-          <div id="gen-output" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-emerald-400 break-all min-h-[5rem] flex items-center">
+          <div id="gen-output" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-emerald-400 break-all min-h-[5rem] flex items-center">
           </div>
           
           <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
@@ -117,7 +126,7 @@
           </div>
         </div>
 
-        <div class="bg-slate-950/50 p-6 rounded-2xl border border-slate-800/50 space-y-6">
+        <div class="bg-slate-950/40 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/30 space-y-6">
           <div class="flex justify-between items-center mb-2">
             <label class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Password Length</label>
             <span id="gen-length-display" class="text-2xl font-mono font-bold text-white bg-slate-800 px-3 py-1 rounded-lg">16</span>
@@ -133,7 +142,7 @@
         <div class="space-y-4">
           <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Character Types</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label for="opt-uppercase" id="lbl-uppercase" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30">
+            <label for="opt-uppercase" id="lbl-uppercase" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
               <div>
                 <div class="font-medium text-emerald-400 lbl-title">Uppercase Letters</div>
                 <div class="text-xs text-slate-500 font-mono mt-0.5">(A-Z)</div>
@@ -436,13 +445,13 @@
       const box = label.querySelector('.chk-box');
       
       if (checked) {
-        label.className = "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30";
+        label.className = "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm";
         title.className = "font-medium text-emerald-400 lbl-title";
         box.className = "chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950";
       } else {
-        label.className = "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-slate-950 border-slate-800 hover:border-slate-700";
+        label.className = "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-slate-950/50 border-slate-700/50 hover:border-slate-600 backdrop-blur-sm";
         title.className = "font-medium text-slate-300 lbl-title";
-        box.className = "chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-slate-800 text-transparent";
+        box.className = "chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-slate-800/70 text-transparent";
       }
     }
 
@@ -472,6 +481,53 @@
 
     resetCopyButton();
     generatePassword();
+
+    // ==================== MATRIX RAIN BACKGROUND ====================
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=';
+
+    const fontSize = 14;
+    let columns;
+    let drops;
+
+    function initDrops() {
+      columns = Math.floor(canvas.width / fontSize);
+      drops = Array(columns).fill(1);
+    }
+    initDrops();
+    window.addEventListener('resize', initDrops);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.08)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.font = fontSize + 'px monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        ctx.fillStyle = y < fontSize * 6 ? 'rgba(16, 185, 129, 0.4)' : 'rgba(16, 185, 129, 0.9)';
+        ctx.fillText(char, x, y);
+
+        if (y > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    setInterval(drawMatrix, 50);
 
   </script>
 </body>
