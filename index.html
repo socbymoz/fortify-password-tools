@@ -448,6 +448,10 @@
     const selfScoreText = document.getElementById('self-score-text');
     const selfProgress = document.getElementById('self-progress');
 
+    function pickRand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
+
     function generatePersonalPassword() {
       const first = document.getElementById('self-firstname').value.trim();
       const last = document.getElementById('self-lastname').value.trim();
@@ -470,55 +474,71 @@
       const dobMonth = dobParts[1] || '';
       const dobDay = dobParts[2] || '';
 
-      const sym = '!@#$%^&*';
-      const parts = [];
-      if (first) parts.push(first);
-      if (last) parts.push(last);
-      if (nick) parts.push(nick);
-      if (color) parts.push(color);
-      if (dobYear) parts.push(dobYear);
-      if (favnum) parts.push(favnum);
+      const sym = pickRand(['!','@','#','$','%','^','&','*','_','-','.']);
+      const sep = pickRand(['_', '-', '.', '']);
 
-      if (parts.length < 2 && dobMonth) parts.push(dobMonth);
+      const f = first ? pickRand([first.toLowerCase(), cap(first), first.toUpperCase()]) : '';
+      const l = last ? pickRand([last.toLowerCase(), cap(last), last.toUpperCase()]) : '';
+      const n = nick ? pickRand([nick.toLowerCase(), cap(nick), nick.toUpperCase()]) : '';
+      const c = color ? pickRand([color.toLowerCase(), cap(color), color.toUpperCase()]) : '';
+      const yr = dobYear;
+      const mn = dobMonth;
+      const dy = dobDay;
+      const num = favnum || '';
 
-      let base = parts.join('');
-      if (dobDay) base += dobDay;
+      const combos = [];
 
-      const transforms = [
-        () => base.toLowerCase(),
-        () => {
-          let s = base;
-          return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-        },
-        () => {
-          let s = base;
-          return s.split('').map((c, i) => i % 2 === 0 ? c.toUpperCase() : c.toLowerCase()).join('');
-        },
-        () => {
-          let s = base;
-          if (dobYear) s += sym[dobYear.length % sym.length];
-          if (favnum) s += sym[parseInt(favnum) % sym.length] || sym[0];
-          else s += sym[Math.floor(Math.random() * sym.length)];
-          return s;
-        }
-      ];
+      // Basic combos - name + year + symbol
+      if (f && yr) combos.push(f + yr + sym);
+      if (f && yr) combos.push(cap(f) + yr + sym);
+      if (f && yr && num) combos.push(f + sep + yr + sym + num);
+      if (f && l && yr) combos.push(f + sep + l + yr);
+      if (f && l && yr) combos.push(cap(f) + sep + cap(l) + yr);
+      if (f && l && yr && sym) combos.push(f + sep + l + sep + yr + sym);
 
-      const pick = transforms[Math.floor(Math.random() * transforms.length)];
-      let pwd = pick();
+      // With nick
+      if (n && yr) combos.push(n + yr + sym);
+      if (f && n && yr) combos.push(f + sep + n + yr);
 
-      const minLen = 10;
-      if (pwd.length < minLen) {
-        const pad = sym[Math.floor(Math.random() * sym.length)] + Math.floor(Math.random() * 999).toString();
-        pwd += pad;
+      // With color
+      if (c && yr) combos.push(c + yr + sym);
+      if (f && c && yr) combos.push(f + sep + c + sep + yr);
+
+      // With day/month
+      if (f && dy) combos.push(f + dy + sym);
+      if (f && mn && dy) combos.push(f + sep + mn + dy);
+      if (f && l && dy) combos.push(cap(f) + sep + cap(l) + dy + sym);
+
+      // With favorite number
+      if (f && num) combos.push(f + sym + num);
+      if (f && yr && num) combos.push(f + sep + yr + sep + num + sym);
+
+      // Longer combos (3+ fields)
+      if (f && l && yr && sym) combos.push(cap(f) + sep + cap(l) + sep + yr + sym);
+      if (f && l && n && yr) combos.push(f + sep + l + sep + n + yr);
+      if (f && c && yr && sym) combos.push(cap(f) + sep + cap(c) + sep + yr + sym);
+      if (f && l && c && yr) combos.push(f + sep + l + sep + c + sep + yr);
+      if (f && yr && mn && dy) combos.push(f + sep + yr + sep + mn + sep + dy);
+      if (f && l && yr && num) combos.push(f + sep + l + sep + yr + sym + num);
+      if (f && n && yr && sym) combos.push(cap(f) + sep + cap(n) + sep + yr + sym);
+      if (f && l && n && yr && sym) combos.push(f + sep + l + sep + n + sep + yr + sym);
+      if (f && l && c && yr && num) combos.push(f + sep + l + sep + c + sep + yr + sym + num);
+
+      // Month+Day as words
+      const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthWord = mn ? monthNames[parseInt(mn)] || mn : '';
+      if (f && monthWord && dy) combos.push(f + sep + monthWord + dy);
+      if (f && monthWord && yr) combos.push(f + sep + monthWord + sep + yr + sym);
+      if (f && l && monthWord && yr) combos.push(f + sep + l + sep + monthWord + sep + yr);
+
+      // Fallback if no combos generated
+      if (combos.length === 0) {
+        if (f) combos.push(cap(f) + sym + (yr || num || '99'));
+        else if (n) combos.push(cap(n) + sym + (yr || num || '99'));
+        else combos.push('Password' + sym + '123');
       }
 
-      pwd = pwd.split('');
-      for (let i = pwd.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [pwd[i], pwd[j]] = [pwd[j], pwd[i]];
-      }
-
-      const finalPwd = pwd.join('');
+      const finalPwd = pickRand(combos);
 
       selfOutput.textContent = finalPwd;
 
