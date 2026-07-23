@@ -210,35 +210,85 @@
 
       <!-- ==================== HASHFY ==================== -->
       <div id="view-hashfy" class="hidden fade-in h-full flex flex-col">
-        <div class="flex border-b border-slate-700/50 -mx-6 md:-mx-8 px-6 md:px-8">
-          <button id="tab-tohash" class="tab-btn text-indigo-400 border-b-2 border-indigo-400 bg-indigo-500/10">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v14"/><path d="m19 9-7 7-7-7"/><path d="M5 21h14"/></svg>
-            Convert to Hash
+        <div class="flex flex-wrap border-b border-slate-700/50 -mx-6 md:-mx-8 px-6 md:px-8">
+          <button id="tab-hash-lookup" class="tab-btn text-indigo-400 border-b-2 border-indigo-400 bg-indigo-500/10">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span class="hidden sm:inline">Hash</span> Lookup
           </button>
-          <button id="tab-fromhash" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16v-6"/><circle cx="12" cy="6" r="1"/><path d="M5 3h14"/><path d="M5 21h14"/></svg>
-            Identify from Hash
+          <button id="tab-hash-gen" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v14"/><path d="m19 9-7 7-7-7"/><path d="M5 21h14"/></svg>
+            <span class="hidden sm:inline">Hash</span> Generator
+          </button>
+          <button id="tab-hash-algos" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h12"/></svg>
+            Algorithms
+          </button>
+          <button id="tab-hash-how" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            How It Works
+          </button>
+          <button id="tab-hash-ethics" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Ethics
           </button>
         </div>
         <div class="flex-1 pt-6 space-y-6 overflow-y-auto">
 
-          <!-- To Hash -->
-          <div id="view-tohash" class="space-y-6">
+          <!-- Hash Lookup -->
+          <div id="view-hash-lookup" class="space-y-6">
+            <div class="bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-4 text-sm text-slate-400">
+              <strong class="text-indigo-400">Educational Tool:</strong> Cryptographic hashes are <strong>one-way functions</strong>. This tool performs lookup against a <strong>local database</strong> of precomputed hashes for demonstration only. It does <strong>not</strong> reverse or decrypt hashes.
+            </div>
+            <div class="relative">
+              <input type="text" id="lookupInput" placeholder="Paste a hash to look up (e.g. 5f4dcc3b5aa765d61d8327deb882cf99)" autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-4 pr-14 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-mono text-sm" />
+              <button id="lookupBtn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 font-medium px-4 py-2 rounded-lg transition-all text-sm">Lookup</button>
+            </div>
+            <div id="lookupError" class="hidden text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl p-3"></div>
+            <div id="lookupResults" class="space-y-4 hidden">
+              <div id="lookupType" class="bg-slate-800/40 rounded-2xl p-5 border border-slate-700/30 flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+                <div><div class="text-xs text-slate-500 uppercase tracking-wider">Detected Type</div><div id="lookupTypeValue" class="text-white font-bold text-lg"></div></div>
+              </div>
+              <div class="bg-slate-800/40 rounded-2xl p-5 border border-slate-700/30">
+                <div class="text-xs text-slate-500 uppercase tracking-wider mb-1">Input Hash</div>
+                <code id="lookupHashValue" class="text-indigo-300 text-sm break-all font-mono"></code>
+              </div>
+              <div id="lookupMatch" class="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+                  <div><div class="text-xs text-slate-500 uppercase tracking-wider">Match Found</div><div id="lookupMatchValue" class="text-emerald-400 font-bold text-xl font-mono"></div></div>
+                  <button id="lookupMatchCopy" class="ml-auto text-slate-500 hover:text-emerald-400 p-2 rounded-lg hover:bg-emerald-500/10 transition-all"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button>
+                </div>
+              </div>
+              <div id="lookupNoMatch" class="hidden bg-amber-500/5 border border-amber-500/20 rounded-2xl p-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
+                  <div><div class="text-xs text-slate-500 uppercase tracking-wider">Result</div><div class="text-amber-400 font-bold">No match found in local database</div><p class="text-xs text-slate-500 mt-1">The hash is not in our demonstration set. Add it to the demo DB or try another hash.</p></div>
+                </div>
+              </div>
+              <div class="bg-slate-800/30 rounded-2xl p-4 border border-slate-700/30">
+                <div class="flex items-start gap-2 text-xs text-slate-500"><svg class="w-4 h-4 shrink-0 mt-0.5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span><strong class="text-slate-400">Why can't hashes be reversed?</strong> Hash functions are one-way by design. This tool only finds matches by comparing against a precomputed list of common password hashes. Without the original input, it's computationally infeasible to reverse a cryptographic hash.</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hash Generator -->
+          <div id="view-hash-gen" class="space-y-6 hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="md:col-span-2">
-                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
-                <input type="text" id="passwordInput" placeholder="Enter password to hash..." autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base" />
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Input Text</label>
+                <input type="text" id="genInput" placeholder="Enter text to hash..." autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base" />
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Salt <span class="text-slate-600 font-normal normal-case">(optional)</span></label>
-                <input type="text" id="saltInput" placeholder="somesalt" autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base" />
+                <input type="text" id="genSalt" placeholder="somesalt" autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base" />
               </div>
             </div>
             <div class="flex items-center gap-4 text-xs text-slate-500">
               <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500"></span> Broken</span>
               <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Weak</span>
               <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Secure</span>
-              <span id="hashStatusText" class="ml-auto text-indigo-400"></span>
+              <span id="genStatus" class="ml-auto text-indigo-400"></span>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
@@ -249,28 +299,56 @@
                   <th class="text-center py-3 px-2 font-semibold w-14">Sec</th>
                   <th class="text-center py-3 px-2 font-semibold w-14">Copy</th>
                 </tr></thead>
-                <tbody id="hashResultsBody"></tbody>
+                <tbody id="genResults"></tbody>
               </table>
             </div>
           </div>
 
-          <!-- From Hash -->
-          <div id="view-fromhash" class="space-y-6 hidden">
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Hash String</label>
-              <input type="text" id="hashInput" placeholder="Paste a hash to identify (e.g. 5d41402abc4b2a76b9719d911017c592)" autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base font-mono text-sm" />
-            </div>
-            <div id="identifyResults" class="space-y-3">
-              <div class="text-center text-slate-500 py-12">
-                <svg class="w-12 h-12 mx-auto mb-3 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <p>Enter a hash above to identify possible algorithms</p>
+          <!-- Algorithms -->
+          <div id="view-hash-algos" class="space-y-6 hidden">
+            <div class="bg-slate-800/30 rounded-2xl p-5 border border-slate-700/30">
+              <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Supported Hash Algorithms</h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead><tr class="text-xs text-slate-500 uppercase tracking-wider border-b border-slate-700/50">
+                    <th class="text-left py-3 px-2 font-semibold">Algorithm</th>
+                    <th class="text-center py-3 px-2 font-semibold">Output Bits</th>
+                    <th class="text-center py-3 px-2 font-semibold">Output Chars</th>
+                    <th class="text-center py-3 px-2 font-semibold">Security</th>
+                    <th class="text-left py-3 px-2 font-semibold">Notes</th>
+                  </tr></thead>
+                  <tbody id="algosTableBody"></tbody>
+                </table>
               </div>
             </div>
-            <div id="hashDetails" class="hidden bg-slate-950/40 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/30 space-y-3">
-              <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Hash Analysis</h3>
-              <div id="hashDetailGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm"></div>
+          </div>
+
+          <!-- How Hashing Works -->
+          <div id="view-hash-how" class="space-y-6 hidden">
+            <div class="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/30 space-y-5">
+              <div><h3 class="text-lg font-bold text-white mb-2">What is a Hash Function?</h3><p class="text-sm text-slate-400 leading-relaxed">A cryptographic hash function is a mathematical algorithm that takes an input (or "message") and produces a fixed-size string of bytes, called the <strong class="text-slate-200">hash value</strong> or <strong class="text-slate-200">digest</strong>. The output is typically a hexadecimal number.</p></div>
+              <div><h3 class="text-lg font-bold text-white mb-2">Key Properties</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30"><div class="text-emerald-400 font-semibold mb-1">One-Way Function</div><p class="text-xs text-slate-400">Given a hash, it's computationally infeasible to find the original input. This is why hashes are used for password storage.</p></div><div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30"><div class="text-emerald-400 font-semibold mb-1">Deterministic</div><p class="text-xs text-slate-400">The same input always produces the same hash output, allowing verification without knowing the original input.</p></div><div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30"><div class="text-emerald-400 font-semibold mb-1">Avalanche Effect</div><p class="text-xs text-slate-400">A small change in input (e.g., one bit) produces a completely different hash output.</p></div><div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30"><div class="text-emerald-400 font-semibold mb-1">Fixed Output Size</div><p class="text-xs text-slate-400">Regardless of input size, the output is always a fixed length (e.g., SHA-256 always produces 256 bits).</p></div></div></div>
+              <div><h3 class="text-lg font-bold text-white mb-2">How This Tool Works</h3><p class="text-sm text-slate-400 leading-relaxed">When you enter a hash in the <strong class="text-slate-200">Hash Lookup</strong> tool, it:</p><ol class="text-sm text-slate-400 space-y-2 mt-3 list-decimal list-inside"><li>Analyzes the hash format (length, character set) to identify likely algorithm(s)</li><li>Searches the <strong class="text-slate-200">local demonstration database</strong> of precomputed hashes</li><li>Returns the matching plaintext if found, or reports no match</li></ol><p class="text-sm text-slate-500 mt-3 bg-amber-500/5 border border-amber-500/10 rounded-xl p-3"><strong>Important:</strong> This is <strong>not</strong> reversing the hash. It's simply looking up the hash in a precomputed dictionary. Hash functions remain one-way — we cannot recover the input without prior knowledge.</p></div>
             </div>
           </div>
+
+          <!-- Ethics -->
+          <div id="view-hash-ethics" class="space-y-6 hidden">
+            <div class="bg-slate-800/30 rounded-2xl p-6 border border-slate-700/30 space-y-5">
+              <div class="flex items-center gap-3 mb-4"><div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div><h3 class="text-xl font-bold text-white">Security &amp; Ethics</h3><p class="text-sm text-slate-400">Using this tool responsibly</p></div></div>
+
+              <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-5"><h4 class="text-emerald-400 font-semibold mb-2">Educational Purpose Only</h4><p class="text-sm text-slate-400">This tool is designed <strong>exclusively for educational purposes</strong> and authorized security testing. It helps demonstrate why cryptographic hashes are important and how hash lookup attacks work in principle.</p></div>
+
+              <div class="bg-red-500/5 border border-red-500/20 rounded-xl p-5"><h4 class="text-red-400 font-semibold mb-2">Do NOT Use For</h4><ul class="text-sm text-slate-400 space-y-1.5 list-disc list-inside"><li>Attempting to crack passwords without explicit authorization</li><li>Accessing accounts or systems you don't own</li><li>Any illegal or unethical activity</li><li>Connecting to real leaked-password databases</li></ul></div>
+
+              <div class="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-5"><h4 class="text-indigo-400 font-semibold mb-2">Privacy &amp; Data Handling</h4><ul class="text-sm text-slate-400 space-y-1.5 list-disc list-inside"><li>All hash lookups are performed <strong>locally</strong> in your browser</li><li>No data is sent to any external server or API</li><li>No hashes or passwords are stored or logged</li><li>The demonstration database is built <strong>entirely from scratch</strong> with common passwords</li></ul></div>
+
+              <div class="bg-amber-500/5 border border-amber-500/20 rounded-xl p-5"><h4 class="text-amber-400 font-semibold mb-2">How Hash Lookup Works</h4><p class="text-sm text-slate-400">This tool does <strong>not</strong> reverse or decrypt hashes. Hash functions are mathematically one-way. Instead, the tool generates hashes for a set of common passwords and stores them in a local lookup table. When you submit a hash, it checks if that hash exists in the precomputed table. This is exactly how rainbow table attacks work — they trade computation time for storage space.</p><p class="text-sm text-slate-400 mt-3">Real password security relies on:</p><ul class="text-sm text-slate-400 space-y-1 mt-2 list-disc list-inside"><li><strong class="text-slate-200">Salt:</strong> Adding random data to each password before hashing</li><li><strong class="text-slate-200">Key stretching:</strong> Using algorithms like bcrypt, scrypt, or Argon2 that are intentionally slow</li><li><strong class="text-slate-200">Pepper:</strong> A secret key added to the hash process</li></ul></div>
+
+              <div class="text-center text-xs text-slate-600 border-t border-slate-700/30 pt-4 mt-2">By using this tool, you agree to use it only for lawful, ethical, and educational purposes. Unauthorized use of hash cracking tools may violate computer fraud and abuse laws.</div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -335,7 +413,7 @@
 
     headerBack.addEventListener('click', () => showView('dashboard'));
     document.getElementById('dash-fortify').addEventListener('click', () => { showView('fortify'); switchFortifyTab('analyzer'); });
-    document.getElementById('dash-hashfy').addEventListener('click', () => { showView('hashfy'); switchHashfyTab('tohash'); });
+    document.getElementById('dash-hashfy').addEventListener('click', () => { showView('hashfy'); switchHashfyTab('hash-lookup'); });
 
     // ================================================================
     // FORTIFY - Tab switching
@@ -580,12 +658,18 @@
     // HASHFY - Tab switching
     // ================================================================
     const hashfyTabEls = {
-      tohash: document.getElementById('tab-tohash'),
-      fromhash: document.getElementById('tab-fromhash')
+      'hash-lookup': document.getElementById('tab-hash-lookup'),
+      'hash-gen': document.getElementById('tab-hash-gen'),
+      'hash-algos': document.getElementById('tab-hash-algos'),
+      'hash-how': document.getElementById('tab-hash-how'),
+      'hash-ethics': document.getElementById('tab-hash-ethics'),
     };
     const hashfyViewEls = {
-      tohash: document.getElementById('view-tohash'),
-      fromhash: document.getElementById('view-fromhash')
+      'hash-lookup': document.getElementById('view-hash-lookup'),
+      'hash-gen': document.getElementById('view-hash-gen'),
+      'hash-algos': document.getElementById('view-hash-algos'),
+      'hash-how': document.getElementById('view-hash-how'),
+      'hash-ethics': document.getElementById('view-hash-ethics'),
     };
 
     function switchHashfyTab(id) {
@@ -595,8 +679,7 @@
       });
     }
 
-    hashfyTabEls.tohash.addEventListener('click', () => switchHashfyTab('tohash'));
-    hashfyTabEls.fromhash.addEventListener('click', () => switchHashfyTab('fromhash'));
+    Object.keys(hashfyTabEls).forEach(k => hashfyTabEls[k].addEventListener('click', () => switchHashfyTab(k)));
 
     // ================================================================
     // HASHFY - MD5 / MD4 / Crypto helpers
@@ -660,39 +743,22 @@
 
     function strToBuf(s) { return new TextEncoder().encode(s); }
     function bufToHex(buf) { return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join(''); }
-    function hexToBytes(hex) { const bytes = []; for (let i = 0; i < hex.length; i += 2) bytes.push(parseInt(hex.substr(i, 2), 16)); return new Uint8Array(bytes); }
 
     async function sha1(s) { return bufToHex(await crypto.subtle.digest('SHA-1', strToBuf(s))); }
+    async function sha224(s) { return bufToHex(await crypto.subtle.digest('SHA-224', strToBuf(s))); }
     async function sha256(s) { return bufToHex(await crypto.subtle.digest('SHA-256', strToBuf(s))); }
+    async function sha384(s) { return bufToHex(await crypto.subtle.digest('SHA-384', strToBuf(s))); }
     async function sha512(s) { return bufToHex(await crypto.subtle.digest('SHA-512', strToBuf(s))); }
-    async function pbkdf2Hash(pwd, salt, i = 100000, kl = 32) {
-      const key = await crypto.subtle.importKey('raw', strToBuf(pwd), 'PBKDF2', false, ['deriveBits']);
-      return bufToHex(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: strToBuf(salt), iterations: i, hash: 'SHA-256' }, key, kl * 8));
-    }
-    async function scryptHash(pwd, salt, N = 16384, r = 8, p = 1, kl = 32) {
-      const key = await crypto.subtle.importKey('raw', strToBuf(pwd), { name: 'SCrypt' }, false, ['deriveBits']);
-      return bufToHex(await crypto.subtle.deriveBits({ name: 'SCrypt', salt: strToBuf(salt), cost: N, blockSize: r, parallel: p }, key, kl * 8));
-    }
-    function bcryptHash(pwd, salt) {
-      if (salt) { const h = MD5(salt); const bytes = hexToBytes(h); const b64 = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '.').replace(/\//g, 'A').substring(0, 22); return bcrypt.hashSync(pwd, '$2a$10$' + b64); }
-      return bcrypt.hashSync(pwd, bcrypt.genSaltSync(10));
-    }
-    async function argon2Hash(pwd, salt) {
-      const result = await argon2.hash({ pass: pwd, salt: salt || 'somesalt', time: 2, mem: 65536, parallelism: 1, hashLen: 32, type: argon2.ArgonType.Argon2id });
-      return bufToHex(result.hash);
-    }
 
-    const hashAlgos = [
-      { id: 'md5', name: 'MD5', bits: 128, sec: 'broken', needSalt: false, fn: async (p,s) => MD5(p) },
-      { id: 'sha1', name: 'SHA-1', bits: 160, sec: 'broken', needSalt: false, fn: async (p,s) => sha1(p) },
-      { id: 'sha256', name: 'SHA-256', bits: 256, sec: 'weak', needSalt: false, fn: async (p,s) => sha256(p) },
-      { id: 'sha512', name: 'SHA-512', bits: 512, sec: 'weak', needSalt: false, fn: async (p,s) => sha512(p) },
-      { id: 'ntlm', name: 'NTLM', bits: 128, sec: 'weak', needSalt: false, fn: async (p,s) => ntlmHash(p) },
-      { id: 'bcrypt', name: 'bcrypt', bits: 184, sec: 'good', needSalt: true, fn: async (p,s) => bcryptHash(p, s || bcrypt.genSaltSync(10)) },
-      { id: 'scrypt', name: 'scrypt', bits: 256, sec: 'good', needSalt: true, fn: async (p,s) => scryptHash(p, s || 'somesalt') },
-      { id: 'pbkdf2', name: 'PBKDF2', bits: 256, sec: 'good', needSalt: true, fn: async (p,s) => pbkdf2Hash(p, s || 'somesalt') },
-      { id: 'argon2', name: 'Argon2', bits: 256, sec: 'good', needSalt: true, fn: async (p,s) => argon2Hash(p, s || 'somesalt') },
-      { id: 'yescrypt', name: 'yescrypt', bits: 256, sec: 'good', needSalt: false, fn: async (p,s) => { throw new Error('Not available in browser'); } },
+    // Generator algorithms
+    const genAlgos = [
+      { id: 'md5', name: 'MD5', bits: 128, sec: 'broken', fn: async (p,s) => MD5(p) },
+      { id: 'sha1', name: 'SHA-1', bits: 160, sec: 'broken', fn: async (p,s) => sha1(p) },
+      { id: 'sha224', name: 'SHA-224', bits: 224, sec: 'weak', fn: async (p,s) => sha224(p) },
+      { id: 'sha256', name: 'SHA-256', bits: 256, sec: 'weak', fn: async (p,s) => sha256(p) },
+      { id: 'sha384', name: 'SHA-384', bits: 384, sec: 'weak', fn: async (p,s) => sha384(p) },
+      { id: 'sha512', name: 'SHA-512', bits: 512, sec: 'weak', fn: async (p,s) => sha512(p) },
+      { id: 'ntlm', name: 'NTLM', bits: 128, sec: 'weak', fn: async (p,s) => ntlmHash(p) },
     ];
 
     const hashSecStyles = {
@@ -701,43 +767,171 @@
       good: { dot: 'bg-emerald-500', label: 'Good', badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' },
     };
 
-    const hPwdInput = document.getElementById('passwordInput');
-    const hSaltInput = document.getElementById('saltInput');
-    const hResultsBody = document.getElementById('hashResultsBody');
-    const hStatusText = document.getElementById('hashStatusText');
-    let hTimeout = null;
+    // Generator UI
+    const genInput = document.getElementById('genInput');
+    const genSalt = document.getElementById('genSalt');
+    const genResults = document.getElementById('genResults');
+    const genStatus = document.getElementById('genStatus');
+    let genTimeout = null;
 
-    function hashRenderRow(algo, hash, loading, error) {
+    function genRenderRow(algo, hash, loading, error) {
       const sec = hashSecStyles[algo.sec];
-      const bl = algo.bits + (algo.id === 'scrypt' || algo.id === 'pbkdf2' || algo.id === 'argon2' || algo.id === 'yescrypt' ? '*' : '');
       return `<tr class="border-b border-slate-800/50 hover:bg-slate-800/20 transition-colors fade-in">
         <td class="py-3 px-2"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full ${sec.dot}"></span><span class="font-medium text-slate-200">${algo.name}</span></div></td>
         <td class="py-3 px-2">${loading ? '<div class="flex items-center gap-2"><div class="spinner"></div><span class="text-slate-500 text-xs">Hashing...</span></div>' : error ? '<span class="text-red-400 text-xs">' + error + '</span>' : '<code class="hash-cell text-xs text-indigo-300/90 block max-w-[320px] md:max-w-[480px] lg:max-w-[600px]" title="' + hash + '">' + hash + '</code>'}</td>
-        <td class="py-3 px-2 text-center text-xs text-slate-500 font-mono">${bl}</td>
+        <td class="py-3 px-2 text-center text-xs text-slate-500 font-mono">${algo.bits}</td>
         <td class="py-3 px-2 text-center"><span class="inline-block text-xs font-medium px-2 py-0.5 rounded-full border ${sec.badge}">${sec.label}</span></td>
-        <td class="py-3 px-2 text-center"><button class="copy-btn text-slate-600 hover:text-indigo-400 transition-colors p-1.5 rounded-lg hover:bg-indigo-500/10 ${!hash || loading || error ? 'opacity-30 pointer-events-none' : ''}" data-hash="${hash || ''}" ${hash ? '' : 'disabled'}><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button></td>
+        <td class="py-3 px-2 text-center"><button class="copy-btn text-slate-600 hover:text-indigo-400 transition-colors p-1.5 rounded-lg hover:bg-indigo-500/10 ${!hash || loading || error ? 'opacity-30 pointer-events-none' : ''}" data-hash="${hash || ''}" ${hash ? '' : 'disabled'}"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button></td>
       </tr>`;
     }
-
-    function hashRenderInit() { hResultsBody.innerHTML = hashAlgos.map(a => hashRenderRow(a, '', false, false)).join(''); }
-
-    async function hashComputeAll() {
-      const pwd = hPwdInput.value; const salt = hSaltInput.value || 'somesalt';
-      if (!pwd) { hashRenderInit(); hStatusText.textContent = ''; return; }
-      hResultsBody.innerHTML = hashAlgos.map(a => hashRenderRow(a, '', true, false)).join('');
-      hStatusText.innerHTML = '<span class="flex items-center gap-2"><div class="spinner"></div> Computing hashes...</span>';
-      const rows = hResultsBody.querySelectorAll('tr');
-      const results = await Promise.allSettled(hashAlgos.map(async (algo, i) => {
-        try { const hash = await algo.fn(pwd, algo.needSalt ? salt : ''); return { i, hash, error: null }; } catch(e) { return { i, hash: null, error: e.message || 'Error' }; }
+    function genRenderInit() { genResults.innerHTML = genAlgos.map(a => genRenderRow(a, '', false, false)).join(''); }
+    async function genCompute() {
+      const txt = genInput.value;
+      if (!txt) { genRenderInit(); genStatus.textContent = ''; return; }
+      genResults.innerHTML = genAlgos.map(a => genRenderRow(a, '', true, false)).join('');
+      genStatus.innerHTML = '<span class="flex items-center gap-2"><div class="spinner"></div> Computing...</span>';
+      const rows = genResults.querySelectorAll('tr');
+      const results = await Promise.allSettled(genAlgos.map(async (algo, i) => {
+        try { const hash = await algo.fn(txt); return { i, hash, error: null }; } catch(e) { return { i, hash: null, error: e.message || 'Error' }; }
       }));
-      for (const res of results) { if (res.status === 'fulfilled') { const { i, hash, error } = res.value; rows[i].outerHTML = hashRenderRow(hashAlgos[i], hash || '', false, error); } }
-      hStatusText.textContent = 'All hashes computed';
+      for (const res of results) { if (res.status === 'fulfilled') { const { i, hash, error } = res.value; rows[i].outerHTML = genRenderRow(genAlgos[i], hash || '', false, error); } }
+      genStatus.textContent = 'Done';
+    }
+    genInput.addEventListener('input', () => { clearTimeout(genTimeout); genTimeout = setTimeout(genCompute, 200); });
+    genRenderInit();
+
+    // ================================================================
+    // HASHFY - Hash Lookup
+    // ================================================================
+    const lookupInput = document.getElementById('lookupInput');
+    const lookupBtn = document.getElementById('lookupBtn');
+    const lookupError = document.getElementById('lookupError');
+    const lookupResults = document.getElementById('lookupResults');
+    const lookupTypeValue = document.getElementById('lookupTypeValue');
+    const lookupHashValue = document.getElementById('lookupHashValue');
+    const lookupMatch = document.getElementById('lookupMatch');
+    const lookupMatchValue = document.getElementById('lookupMatchValue');
+    const lookupMatchCopy = document.getElementById('lookupMatchCopy');
+    const lookupNoMatch = document.getElementById('lookupNoMatch');
+
+    // Hash identification rules
+    const hashIdRules = [
+      { match: h => /^\$argon2(id|i|d)\$/.test(h), name: 'Argon2', bits: 'Variable', sec: 'good' },
+      { match: h => /^\$(2[abyx]|2b)\$/.test(h) && h.length === 60, name: 'bcrypt', bits: '184', sec: 'good' },
+      { match: h => /^\$y\$/.test(h), name: 'yescrypt', bits: 'Variable', sec: 'good' },
+      { match: h => /^[0-9a-fA-F]{128}$/.test(h), name: 'SHA-512', bits: '512', sec: 'weak' },
+      { match: h => /^[0-9a-fA-F]{96}$/.test(h), name: 'SHA-384', bits: '384', sec: 'weak' },
+      { match: h => /^[0-9a-fA-F]{64}$/.test(h), name: 'SHA-256', bits: '256', sec: 'weak' },
+      { match: h => /^[0-9a-fA-F]{56}$/.test(h), name: 'SHA-224', bits: '224', sec: 'weak' },
+      { match: h => /^[0-9a-fA-F]{40}$/.test(h), name: 'SHA-1', bits: '160', sec: 'broken' },
+      { match: h => /^[0-9a-fA-F]{32}$/.test(h), name: 'MD5 / NTLM', bits: '128', sec: 'broken' },
+    ];
+
+    // Common passwords for demo database
+    const commonPwds = ['password','123456','12345678','qwerty','admin','letmein','welcome','monkey','dragon','master','hello','abc123','passw0rd','iloveyou','sunshine','princess','football','shadow','trustno1','batman'];
+
+    // Demo DB: { algo_id: { hash: pwd } }
+    const demoDB = { md5: {}, sha1: {}, sha224: {}, sha256: {}, sha384: {}, sha512: {}, ntlm: {} };
+
+    async function buildDemoDB() {
+      for (const pwd of commonPwds) {
+        demoDB.md5[MD5(pwd)] = pwd;
+        demoDB.sha1[await sha1(pwd)] = pwd;
+        demoDB.sha224[await sha224(pwd)] = pwd;
+        demoDB.sha256[await sha256(pwd)] = pwd;
+        demoDB.sha384[await sha384(pwd)] = pwd;
+        demoDB.sha512[await sha512(pwd)] = pwd;
+        demoDB.ntlm[ntlmHash(pwd)] = pwd;
+      }
+    }
+    buildDemoDB();
+
+    function detectHashType(hash) {
+      for (const rule of hashIdRules) {
+        if (rule.match(hash)) return rule;
+      }
+      return null;
     }
 
-    hPwdInput.addEventListener('input', () => { clearTimeout(hTimeout); hTimeout = setTimeout(hashComputeAll, 200); });
-    hSaltInput.addEventListener('input', () => { clearTimeout(hTimeout); hTimeout = setTimeout(hashComputeAll, 200); });
-    hashRenderInit();
+    function lookupHash(hash, typeName) {
+      const h = hash.toLowerCase();
+      // Map display names to DB keys
+      const map = { 'MD5 / NTLM': ['md5','ntlm'], 'SHA-1': ['sha1'], 'SHA-224': ['sha224'], 'SHA-256': ['sha256'], 'SHA-384': ['sha384'], 'SHA-512': ['sha512'] };
+      const keys = map[typeName];
+      if (!keys) return null;
+      for (const key of keys) {
+        if (demoDB[key][h]) return demoDB[key][h];
+        // Also check uppercase
+        if (demoDB[key][hash]) return demoDB[key][hash];
+      }
+      return null;
+    }
 
+    function doLookup() {
+      const raw = lookupInput.value.trim();
+      lookupError.classList.add('hidden');
+      lookupResults.classList.add('hidden');
+
+      if (!raw) { lookupError.textContent = 'Please enter a hash to look up.'; lookupError.classList.remove('hidden'); return; }
+      if (!/^[0-9a-fA-F]+$/.test(raw)) { lookupError.textContent = 'Invalid hash format. Only hexadecimal characters (0-9, a-f) are supported.'; lookupError.classList.remove('hidden'); return; }
+
+      const detected = detectHashType(raw);
+      if (!detected) { lookupError.textContent = 'Unknown hash format. Supported: MD5, SHA-1/224/256/384/512, NTLM.'; lookupError.classList.remove('hidden'); return; }
+
+      lookupTypeValue.textContent = detected.name + ' (' + detected.bits + ' bits)';
+      lookupHashValue.textContent = raw;
+      lookupResults.classList.remove('hidden');
+
+      const plaintext = lookupHash(raw, detected.name);
+      if (plaintext) {
+        lookupMatch.classList.remove('hidden');
+        lookupNoMatch.classList.add('hidden');
+        lookupMatchValue.textContent = plaintext;
+      } else {
+        lookupMatch.classList.add('hidden');
+        lookupNoMatch.classList.remove('hidden');
+      }
+    }
+
+    lookupBtn.addEventListener('click', doLookup);
+    lookupInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doLookup(); });
+
+    lookupMatchCopy.addEventListener('click', () => {
+      const txt = lookupMatchValue.textContent;
+      if (!txt) return;
+      navigator.clipboard.writeText(txt).then(() => showToast('Copied')).catch(() => {
+        const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('Copied');
+      });
+    });
+
+    // ================================================================
+    // HASHFY - Algorithms info table
+    // ================================================================
+    const algoInfo = [
+      { name: 'MD5', bits: '128', chars: '32', sec: 'broken', note: 'Broken — collision attacks are practical. Do not use for security.' },
+      { name: 'SHA-1', bits: '160', chars: '40', sec: 'broken', note: 'Broken — collision attacks demonstrated (SHAttered). Not recommended.' },
+      { name: 'SHA-224', bits: '224', chars: '56', sec: 'weak', note: 'Truncated SHA-256. Still one-way but less collision resistance than SHA-256.' },
+      { name: 'SHA-256', bits: '256', chars: '64', sec: 'weak', note: 'Not ideal for passwords by itself. Use with key stretching (PBKDF2, bcrypt, etc.).' },
+      { name: 'SHA-384', bits: '384', chars: '96', sec: 'weak', note: 'Truncated SHA-512. No known attacks but not password-specific.' },
+      { name: 'SHA-512', bits: '512', chars: '128', sec: 'weak', note: 'Largest SHA-2 variant. Not ideal for passwords without key stretching.' },
+      { name: 'NTLM', bits: '128', chars: '32', sec: 'weak', note: 'Legacy Windows authentication. Very weak, easily reversed with rainbow tables.' },
+    ];
+
+    const algosTbody = document.getElementById('algosTableBody');
+    algosTbody.innerHTML = algoInfo.map(a => {
+      const sec = hashSecStyles[a.sec];
+      return `<tr class="border-b border-slate-800/50 hover:bg-slate-800/20 transition-colors">
+        <td class="py-3 px-2"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full ${sec.dot}"></span><span class="font-medium text-slate-200">${a.name}</span></div></td>
+        <td class="py-3 px-2 text-center text-sm text-slate-300 font-mono">${a.bits}</td>
+        <td class="py-3 px-2 text-center text-sm text-slate-300 font-mono">${a.chars}</td>
+        <td class="py-3 px-2 text-center"><span class="inline-block text-xs font-medium px-2 py-0.5 rounded-full border ${sec.badge}">${sec.label}</span></td>
+        <td class="py-3 px-2 text-sm text-slate-400">${a.note}</td>
+      </tr>`;
+    }).join('');
+
+    // ================================================================
+    // GLOBAL - Toast & Copy
+    // ================================================================
     function showToast(msg) {
       const old = document.querySelector('.copied-toast'); if (old) old.remove();
       const toast = document.createElement('div'); toast.className = 'copied-toast'; toast.textContent = msg;
@@ -752,57 +946,6 @@
         const ta = document.createElement('textarea'); ta.value = hash; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('Copied');
       });
     });
-
-    // ================================================================
-    // HASHFY - From Hash (Identify)
-    // ================================================================
-    const hashInput = document.getElementById('hashInput');
-    const identifyResults = document.getElementById('identifyResults');
-    const hashDetails = document.getElementById('hashDetails');
-    const hashDetailGrid = document.getElementById('hashDetailGrid');
-    let identTimeout = null;
-
-    const hashIdentifiers = [
-      { id: 'argon2', name: 'Argon2', match: h => /^\$argon2(id|i|d)\$/.test(h), bits: 'Variable', desc: 'Starts with $argon2', sec: 'good' },
-      { id: 'bcrypt', name: 'bcrypt', match: h => /^\$(2[abyx]|2b)\$/.test(h) && h.length === 60, bits: '184', desc: 'Starts with $2b$ / 60 chars', sec: 'good' },
-      { id: 'yescrypt', name: 'yescrypt', match: h => /^\$y\$/.test(h), bits: 'Variable', desc: 'Starts with $y$', sec: 'good' },
-      { id: 'sha512', name: 'SHA-512', match: h => /^[0-9a-fA-F]{128}$/.test(h), bits: '512', desc: '128 hex chars', sec: 'weak' },
-      { id: 'sha256', name: 'SHA-256', match: h => /^[0-9a-fA-F]{64}$/.test(h), bits: '256', desc: '64 hex chars', sec: 'weak' },
-      { id: 'sha1', name: 'SHA-1', match: h => /^[0-9a-fA-F]{40}$/.test(h), bits: '160', desc: '40 hex chars', sec: 'broken' },
-      { id: 'md5', name: 'MD5', match: h => /^[0-9a-fA-F]{32}$/.test(h), bits: '128', desc: '32 hex chars', sec: 'broken' },
-      { id: 'ntlm', name: 'NTLM', match: h => /^[0-9a-fA-F]{32}$/.test(h), bits: '128', desc: '32 hex chars (same format as MD5)', sec: 'weak' },
-      { id: 'pbkdf2', name: 'PBKDF2', match: h => /^[0-9a-fA-F]{64}$/.test(h) || /^\$pbkdf2/.test(h), bits: '256', desc: '64 hex chars or $pbkdf2 prefix', sec: 'good' },
-      { id: 'scrypt', name: 'scrypt', match: h => /^[0-9a-fA-F]{64}$/.test(h), bits: '256', desc: '64 hex chars', sec: 'good' },
-    ];
-
-    function analyzeHash(raw) {
-      const h = raw.trim();
-      if (!h) {
-        identifyResults.innerHTML = `<div class="text-center text-slate-500 py-12"><svg class="w-12 h-12 mx-auto mb-3 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><p>Enter a hash above to identify possible algorithms</p></div>`;
-        hashDetails.classList.add('hidden'); return;
-      }
-      const length = h.length; const isHex = /^[0-9a-fA-F]+$/.test(h);
-      const isBase64 = /^[A-Za-z0-9+/=]+$/.test(h) && !isHex;
-      const chars = isHex ? 'Hex' : isBase64 ? 'Base64' : 'Mixed/ASCII';
-      hashDetailGrid.innerHTML = `<div class="bg-slate-800/40 rounded-xl p-3"><div class="text-xs text-slate-500">Length</div><div class="text-white font-mono font-bold text-lg">${length}</div></div><div class="bg-slate-800/40 rounded-xl p-3"><div class="text-xs text-slate-500">Encoding</div><div class="text-white font-mono font-bold text-lg">${chars}</div></div><div class="bg-slate-800/40 rounded-xl p-3"><div class="text-xs text-slate-500">Byte Length</div><div class="text-white font-mono font-bold text-lg">${isHex ? length / 2 : isBase64 ? Math.floor(length * 0.75) : '?'}</div></div><div class="bg-slate-800/40 rounded-xl p-3"><div class="text-xs text-slate-500">Bit Length</div><div class="text-white font-mono font-bold text-lg">${isHex ? length * 4 : isBase64 ? Math.floor(length * 0.75) * 8 : '?'}</div></div>`;
-      hashDetails.classList.remove('hidden');
-      const matched = hashIdentifiers.filter(id => id.match(h));
-      if (matched.length === 0) {
-        identifyResults.innerHTML = `<div class="bg-slate-800/30 rounded-2xl p-8 text-center border border-slate-700/30"><div class="text-amber-400 text-lg font-medium mb-2">No algorithms matched</div><p class="text-slate-500 text-sm">This hash format doesn't match any known algorithm.</p></div>`; return;
-      }
-      const grouped = []; const seen = new Set();
-      for (const m of matched) {
-        if (m.id === 'ntlm' && matched.some(x => x.id === 'md5')) { if (!seen.has('md5-ntlm')) { seen.add('md5-ntlm'); grouped.push({ name: 'MD5 / NTLM', bits: '128', sec: 'broken', note: 'Both produce 32 hex chars. Indistinguishable by format alone.', ids: ['md5','ntlm'] }); } continue; }
-        if ((m.id === 'pbkdf2' || m.id === 'scrypt') && matched.some(x => x.id === 'sha256')) { if (!seen.has('sha256-pbkdf2-scrypt')) { seen.add('sha256-pbkdf2-scrypt'); grouped.push({ name: 'SHA-256 / PBKDF2 / scrypt', bits: '256', sec: 'weak', note: 'All produce 64 hex chars. PBKDF2/scrypt output length is configurable.', ids: ['sha256','pbkdf2','scrypt'] }); } continue; }
-        if (!seen.has(m.id)) { seen.add(m.id); grouped.push({ name: m.name, bits: m.bits, sec: m.sec, note: m.desc, ids: [m.id] }); }
-      }
-      identifyResults.innerHTML = grouped.map(g => {
-        const sec = hashSecStyles[g.sec === 'broken' ? 'broken' : g.sec === 'weak' ? 'weak' : 'good'];
-        return `<div class="bg-slate-800/30 rounded-2xl p-5 border border-slate-700/30 fade-in"><div class="flex items-center justify-between mb-2"><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full ${sec.dot}"></span><span class="font-bold text-white text-base">${g.name}</span></div><span class="text-xs font-medium px-2 py-0.5 rounded-full border ${sec.badge}">${sec.label}</span></div><div class="flex items-center gap-4 text-sm text-slate-400"><span>${g.bits} bits</span><span class="text-slate-600">|</span><span>${g.note}</span></div></div>`;
-      }).join('');
-    }
-
-    hashInput.addEventListener('input', () => { clearTimeout(identTimeout); identTimeout = setTimeout(() => analyzeHash(hashInput.value), 200); });
 
     // ================================================================
     // MATRIX BACKGROUND
