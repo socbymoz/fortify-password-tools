@@ -3,258 +3,286 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fortify - Password Tools</title>
+  <title>Security Tools Suite</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/dist/argon2-browser.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     ::selection { background-color: rgba(16, 185, 129, 0.3); }
     .fade-in { animation: fadeIn 0.3s ease-in-out; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in-up { animation: fadeInUp 0.4s ease-out; }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .sr-only {
-      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; 
-      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
-    }
-    #matrixCanvas {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      z-index: 0; pointer-events: none;
-    }
-    body { position: relative; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+    #matrixCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+    body { position: relative; background: #0f172a; }
     .card-wrapper { position: relative; z-index: 1; }
     input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.8); cursor: pointer; }
+    .hash-cell { max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'Courier New', monospace; }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(99,102,241,0.3); border-top-color: #6366f1; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .copied-toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: #a5b4fc; padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(99,102,241,0.3); font-size: 14px; z-index: 100; animation: fadeIn 0.2s ease-out; }
+    .tab-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
   </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-200 font-sans p-4 md:p-8 flex items-center justify-center">
+<body class="min-h-screen text-slate-200 p-4 md:p-8 flex items-center justify-center">
 
   <canvas id="matrixCanvas"></canvas>
 
-  <div class="card-wrapper w-full max-w-4xl bg-slate-900/60 backdrop-blur-lg rounded-3xl shadow-2xl border border-slate-700/30 overflow-hidden flex flex-col">
-    
+  <div class="card-wrapper w-full max-w-5xl bg-slate-900/60 backdrop-blur-lg rounded-3xl shadow-2xl border border-slate-700/30 overflow-hidden flex flex-col min-h-[600px]">
+
     <!-- Header -->
     <div class="bg-slate-900/80 border-b border-slate-700/50 p-6 flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-        <i data-lucide="lock"></i>
+      <div id="headerBack" class="hidden w-9 h-9 rounded-xl bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center cursor-pointer transition-all" title="Back to Dashboard">
+        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+      </div>
+      <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center" id="headerIcon">
+        <i data-lucide="shield"></i>
       </div>
       <div>
-        <h1 class="text-2xl font-bold text-white tracking-tight">Fortify</h1>
-        <p class="text-sm text-slate-400">Advanced Password Security Suite</p>
+        <h1 id="headerTitle" class="text-2xl font-bold text-white tracking-tight">Security Tools Suite</h1>
+        <p id="headerSub" class="text-sm text-slate-400">Password security &amp; hash utilities</p>
       </div>
     </div>
 
-    <!-- Navigation Tabs -->
-    <div class="flex border-b border-slate-700/50">
-      <button id="tab-analyzer" class="flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/10">
-        <i data-lucide="shield" class="w-4 h-4"></i>
-        Strength Analyzer
-      </button>
-      <button id="tab-generator" class="flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
-        <i data-lucide="key-round" class="w-4 h-4"></i>
-        Random Gen
-      </button>
-      <button id="tab-self" class="flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
-        <i data-lucide="user" class="w-4 h-4"></i>
-        Personal Gen
-      </button>
-    </div>
+    <div class="flex-1 p-6 md:p-8 relative">
 
-    <!-- Content Area -->
-    <div class="p-6 md:p-8 relative min-h-[500px]">
-
-      <!-- ==================== WELCOME VIEW ==================== -->
-      <div id="view-welcome" class="fade-in">
-        <div class="text-center mb-8 fade-in-up">
+      <!-- ==================== DASHBOARD ==================== -->
+      <div id="view-dashboard" class="fade-in h-full flex flex-col justify-center">
+        <div class="text-center mb-10 fade-in-up">
           <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-4">
             <i data-lucide="sparkles" class="w-8 h-8"></i>
           </div>
-          <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">How would you like to proceed?</h2>
-          <p class="text-slate-400">Choose a method to create your secure password</p>
+          <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">Choose a Tool</h2>
+          <p class="text-slate-400">Select a security tool to get started</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 fade-in-up" style="animation-delay: 0.1s">
-          <button id="welcome-random" class="group bg-slate-950/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-8 text-left hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all">
-            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <i data-lucide="shuffle" class="w-6 h-6"></i>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto w-full fade-in-up">
+          <button id="dash-fortify" class="group bg-slate-950/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-8 text-left hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all">
+            <div class="w-14 h-14 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <i data-lucide="shield" class="w-7 h-7"></i>
             </div>
-            <h3 class="text-lg font-bold text-white mb-2">Random Password</h3>
-            <p class="text-sm text-slate-400">Generate a cryptographically random password with customizable length and character types.</p>
+            <h3 class="text-xl font-bold text-white mb-2">Fortify</h3>
+            <p class="text-sm text-slate-400">Password strength analysis, random password generation &amp; personal password creator</p>
           </button>
-          <button id="welcome-self" class="group bg-slate-950/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-8 text-left hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all">
-            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <i data-lucide="user" class="w-6 h-6"></i>
+          <button id="dash-hashfy" class="group bg-slate-950/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-8 text-left hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all">
+            <div class="w-14 h-14 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <i data-lucide="hash" class="w-7 h-7"></i>
             </div>
-            <h3 class="text-lg font-bold text-white mb-2">Generate from Your Info</h3>
-            <p class="text-sm text-slate-400">Create a memorable yet secure password based on your personal details like name and date of birth.</p>
+            <h3 class="text-xl font-bold text-white mb-2">Hashfy</h3>
+            <p class="text-sm text-slate-400">Convert passwords to hashes &amp; identify hash algorithms from hash strings</p>
           </button>
-        </div>
-        <div class="text-center mt-8 fade-in-up" style="animation-delay: 0.2s">
-          <p class="text-xs text-slate-500">Or use the tabs above to access all tools directly</p>
         </div>
       </div>
 
-      <!-- ==================== ANALYZER VIEW ==================== -->
-      <div id="view-analyzer" class="space-y-8 fade-in hidden">
-        <div class="relative">
-          <input type="password" id="analyzer-input" placeholder="Type a password to test..." class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-4 pr-12 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-lg" />
-          <button id="analyzer-toggle-visibility" type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
-            <i data-lucide="eye" id="eye-icon"></i>
+      <!-- ==================== FORTIFY ==================== -->
+      <div id="view-fortify" class="hidden fade-in h-full flex flex-col">
+        <div class="flex border-b border-slate-700/50 -mx-6 md:-mx-8 px-6 md:px-8">
+          <button id="tab-analyzer" class="tab-btn text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/10">
+            <i data-lucide="shield" class="w-4 h-4"></i>
+            Strength Analyzer
+          </button>
+          <button id="tab-generator" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+            <i data-lucide="key-round" class="w-4 h-4"></i>
+            Random Gen
+          </button>
+          <button id="tab-self" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+            <i data-lucide="user" class="w-4 h-4"></i>
+            Personal Gen
           </button>
         </div>
-        <div class="bg-slate-950/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/30">
-          <div class="flex justify-between items-end mb-4">
-            <div class="flex items-center gap-3">
-              <div id="analyzer-icon"></div>
+        <div class="flex-1 pt-6 space-y-8 overflow-y-auto">
+
+          <!-- Analyzer -->
+          <div id="view-analyzer" class="space-y-8">
+            <div class="relative">
+              <input type="password" id="analyzer-input" placeholder="Type a password to test..." class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-4 pr-12 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-lg" />
+              <button id="analyzer-toggle-visibility" type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
+                <i data-lucide="eye" id="eye-icon"></i>
+              </button>
+            </div>
+            <div class="bg-slate-950/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/30">
+              <div class="flex justify-between items-end mb-4">
+                <div class="flex items-center gap-3">
+                  <div id="analyzer-icon"></div>
+                  <div><p class="text-sm text-slate-400 mb-1">Strength Level</p><h2 id="analyzer-label" class="text-2xl font-bold text-slate-400">Enter a password</h2></div>
+                </div>
+                <span id="analyzer-score-text" class="text-xl font-mono text-slate-300">0%</span>
+              </div>
+              <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden flex">
+                <div id="analyzer-progress" class="h-full bg-slate-700 transition-all duration-500 ease-out" style="width: 0%"></div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-3">
+                <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Requirements Checklist</h3>
+                <div id="req-length" class="flex items-center gap-2 text-sm text-slate-500"></div>
+                <div id="req-uppercase" class="flex items-center gap-2 text-sm text-slate-500"></div>
+                <div id="req-lowercase" class="flex items-center gap-2 text-sm text-slate-500"></div>
+                <div id="req-numbers" class="flex items-center gap-2 text-sm text-slate-500"></div>
+                <div id="req-symbols" class="flex items-center gap-2 text-sm text-slate-500"></div>
+              </div>
+              <div id="feedback-container" class="space-y-3 hidden">
+                <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Security Insights</h3>
+                <ul id="feedback-list" class="space-y-2"></ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generator -->
+          <div id="view-generator" class="space-y-8 hidden">
+            <div class="relative group">
+              <div id="gen-output" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-emerald-400 break-all min-h-[5rem] flex items-center"></div>
+              <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                <button id="gen-refresh" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all" title="Generate New"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button>
+                <button id="gen-copy" class="flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-slate-800 text-slate-300 hover:bg-slate-700"><span id="gen-copy-icon"></span><span id="gen-copy-text" class="hidden md:inline text-sm">Copy</span></button>
+              </div>
+            </div>
+            <div class="bg-slate-950/40 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/30 space-y-6">
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Password Length</label>
+                <span id="gen-length-display" class="text-2xl font-mono font-bold text-white bg-slate-800 px-3 py-1 rounded-lg">16</span>
+              </div>
+              <input type="range" id="gen-length" min="8" max="128" value="16" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+              <div class="flex justify-between text-xs font-mono text-slate-500"><span>8</span><span>64</span><span>128</span></div>
+            </div>
+            <div class="space-y-4">
+              <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Character Types</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label for="opt-uppercase" id="lbl-uppercase" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
+                  <div><div class="font-medium text-emerald-400 lbl-title">Uppercase Letters</div><div class="text-xs text-slate-500 font-mono mt-0.5">(A-Z)</div></div>
+                  <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"><i data-lucide="check" class="w-4 h-4"></i></div>
+                  <input type="checkbox" id="opt-uppercase" class="sr-only opt-checkbox" checked />
+                </label>
+                <label for="opt-lowercase" id="lbl-lowercase" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
+                  <div><div class="font-medium text-emerald-400 lbl-title">Lowercase Letters</div><div class="text-xs text-slate-500 font-mono mt-0.5">(a-z)</div></div>
+                  <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"><i data-lucide="check" class="w-4 h-4"></i></div>
+                  <input type="checkbox" id="opt-lowercase" class="sr-only opt-checkbox" checked />
+                </label>
+                <label for="opt-numbers" id="lbl-numbers" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
+                  <div><div class="font-medium text-emerald-400 lbl-title">Numbers</div><div class="text-xs text-slate-500 font-mono mt-0.5">(0-9)</div></div>
+                  <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"><i data-lucide="check" class="w-4 h-4"></i></div>
+                  <input type="checkbox" id="opt-numbers" class="sr-only opt-checkbox" checked />
+                </label>
+                <label for="opt-symbols" id="lbl-symbols" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
+                  <div><div class="font-medium text-emerald-400 lbl-title">Special Symbols</div><div class="text-xs text-slate-500 font-mono mt-0.5">(!@#$)</div></div>
+                  <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"><i data-lucide="check" class="w-4 h-4"></i></div>
+                  <input type="checkbox" id="opt-symbols" class="sr-only opt-checkbox" checked />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Personal Gen -->
+          <div id="view-self" class="space-y-8 hidden">
+            <div class="bg-slate-950/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/30">
+              <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Your Details</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><label class="block text-sm text-slate-400 mb-1.5">First Name</label><input type="text" id="self-firstname" placeholder="John" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" /></div>
+                <div><label class="block text-sm text-slate-400 mb-1.5">Last Name</label><input type="text" id="self-lastname" placeholder="Doe" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" /></div>
+                <div><label class="block text-sm text-slate-400 mb-1.5">Date of Birth</label><input type="date" id="self-dob" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-all" /></div>
+                <div><label class="block text-sm text-slate-400 mb-1.5">Nickname / Pet Name</label><input type="text" id="self-nickname" placeholder="Buddy" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" /></div>
+                <div><label class="block text-sm text-slate-400 mb-1.5">Favorite Number</label><input type="number" id="self-favnum" placeholder="7" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" /></div>
+                <div><label class="block text-sm text-slate-400 mb-1.5">Favorite Color</label><input type="text" id="self-color" placeholder="Blue" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" /></div>
+              </div>
+              <button id="self-generate-btn" class="mt-6 w-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-medium rounded-xl px-6 py-3 transition-all flex items-center justify-center gap-2"><i data-lucide="wand" class="w-5 h-5"></i>Generate Password from My Info</button>
+            </div>
+            <div id="self-result" class="hidden fade-in space-y-6">
+              <div class="relative group">
+                <div id="self-output" class="w-full bg-slate-950/70 border border-emerald-500/30 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-emerald-400 break-all min-h-[5rem] flex items-center"></div>
+                <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                  <button id="self-refresh" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all" title="Regenerate"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button>
+                  <button id="self-copy" class="flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-slate-800 text-slate-300 hover:bg-slate-700"><span id="self-copy-icon"></span><span id="self-copy-text" class="hidden md:inline text-sm">Copy</span></button>
+                </div>
+              </div>
+              <div id="self-strength" class="bg-slate-950/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/30">
+                <div class="flex justify-between items-center mb-3">
+                  <div class="flex items-center gap-2"><div id="self-strength-icon"></div><span id="self-strength-label" class="font-bold text-lg text-slate-300">Checking...</span></div>
+                  <span id="self-score-text" class="text-lg font-mono text-slate-300">0%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden"><div id="self-progress" class="h-full bg-slate-700 transition-all duration-500 ease-out" style="width: 0%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== HASHFY ==================== -->
+      <div id="view-hashfy" class="hidden fade-in h-full flex flex-col">
+        <div class="flex border-b border-slate-700/50 -mx-6 md:-mx-8 px-6 md:px-8">
+          <button id="tab-tohash" class="tab-btn text-indigo-400 border-b-2 border-indigo-400 bg-indigo-500/10">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v14"/><path d="m19 9-7 7-7-7"/><path d="M5 21h14"/></svg>
+            Convert to Hash
+          </button>
+          <button id="tab-fromhash" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16v-6"/><circle cx="12" cy="6" r="1"/><path d="M5 3h14"/><path d="M5 21h14"/></svg>
+            Identify from Hash
+          </button>
+        </div>
+        <div class="flex-1 pt-6 space-y-6 overflow-y-auto">
+
+          <!-- To Hash -->
+          <div id="view-tohash" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
+                <input type="text" id="passwordInput" placeholder="Enter password to hash..." autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base" />
+              </div>
               <div>
-                <p class="text-sm text-slate-400 mb-1">Strength Level</p>
-                <h2 id="analyzer-label" class="text-2xl font-bold text-slate-400">Enter a password</h2>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Salt <span class="text-slate-600 font-normal normal-case">(optional)</span></label>
+                <input type="text" id="saltInput" placeholder="somesalt" autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base" />
               </div>
             </div>
-            <span id="analyzer-score-text" class="text-xl font-mono text-slate-300">0%</span>
+            <div class="flex items-center gap-4 text-xs text-slate-500">
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500"></span> Broken</span>
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Weak</span>
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Secure</span>
+              <span id="hashStatusText" class="ml-auto text-indigo-400"></span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead><tr class="text-xs text-slate-500 uppercase tracking-wider border-b border-slate-700/50">
+                  <th class="text-left py-3 px-2 font-semibold">Algorithm</th>
+                  <th class="text-left py-3 px-2 font-semibold">Hash Output</th>
+                  <th class="text-center py-3 px-2 font-semibold w-16">Bits</th>
+                  <th class="text-center py-3 px-2 font-semibold w-14">Sec</th>
+                  <th class="text-center py-3 px-2 font-semibold w-14">Copy</th>
+                </tr></thead>
+                <tbody id="hashResultsBody"></tbody>
+              </table>
+            </div>
           </div>
-          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden flex">
-            <div id="analyzer-progress" class="h-full bg-slate-700 transition-all duration-500 ease-out" style="width: 0%"></div>
-          </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="space-y-3">
-            <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Requirements Checklist</h3>
-            <div id="req-length" class="flex items-center gap-2 text-sm text-slate-500"></div>
-            <div id="req-uppercase" class="flex items-center gap-2 text-sm text-slate-500"></div>
-            <div id="req-lowercase" class="flex items-center gap-2 text-sm text-slate-500"></div>
-            <div id="req-numbers" class="flex items-center gap-2 text-sm text-slate-500"></div>
-            <div id="req-symbols" class="flex items-center gap-2 text-sm text-slate-500"></div>
-          </div>
-          <div id="feedback-container" class="space-y-3 hidden">
-            <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Security Insights</h3>
-            <ul id="feedback-list" class="space-y-2"></ul>
-          </div>
-        </div>
-      </div>
 
-      <!-- ==================== RANDOM GENERATOR VIEW ==================== -->
-      <div id="view-generator" class="space-y-8 fade-in hidden">
-        <div class="relative group">
-          <div id="gen-output" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-emerald-400 break-all min-h-[5rem] flex items-center"></div>
-          <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-            <button id="gen-refresh" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all" title="Generate New">
-              <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-            </button>
-            <button id="gen-copy" class="flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-slate-800 text-slate-300 hover:bg-slate-700">
-              <span id="gen-copy-icon"></span>
-              <span id="gen-copy-text" class="hidden md:inline text-sm">Copy</span>
-            </button>
-          </div>
-        </div>
-        <div class="bg-slate-950/40 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/30 space-y-6">
-          <div class="flex justify-between items-center mb-2">
-            <label class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Password Length</label>
-            <span id="gen-length-display" class="text-2xl font-mono font-bold text-white bg-slate-800 px-3 py-1 rounded-lg">16</span>
-          </div>
-          <input type="range" id="gen-length" min="8" max="128" value="16" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
-          <div class="flex justify-between text-xs font-mono text-slate-500"><span>8</span><span>64</span><span>128</span></div>
-        </div>
-        <div class="space-y-4">
-          <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Character Types</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label for="opt-uppercase" id="lbl-uppercase" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
-              <div><div class="font-medium text-emerald-400 lbl-title">Uppercase Letters</div><div class="text-xs text-slate-500 font-mono mt-0.5">(A-Z)</div></div>
-              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"><i data-lucide="check" class="w-4 h-4"></i></div>
-              <input type="checkbox" id="opt-uppercase" class="sr-only opt-checkbox" checked />
-            </label>
-            <label for="opt-lowercase" id="lbl-lowercase" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
-              <div><div class="font-medium text-emerald-400 lbl-title">Lowercase Letters</div><div class="text-xs text-slate-500 font-mono mt-0.5">(a-z)</div></div>
-              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"><i data-lucide="check" class="w-4 h-4"></i></div>
-              <input type="checkbox" id="opt-lowercase" class="sr-only opt-checkbox" checked />
-            </label>
-            <label for="opt-numbers" id="lbl-numbers" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
-              <div><div class="font-medium text-emerald-400 lbl-title">Numbers</div><div class="text-xs text-slate-500 font-mono mt-0.5">(0-9)</div></div>
-              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"><i data-lucide="check" class="w-4 h-4"></i></div>
-              <input type="checkbox" id="opt-numbers" class="sr-only opt-checkbox" checked />
-            </label>
-            <label for="opt-symbols" id="lbl-symbols" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm">
-              <div><div class="font-medium text-emerald-400 lbl-title">Special Symbols</div><div class="text-xs text-slate-500 font-mono mt-0.5">(!@#$)</div></div>
-              <div class="chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"><i data-lucide="check" class="w-4 h-4"></i></div>
-              <input type="checkbox" id="opt-symbols" class="sr-only opt-checkbox" checked />
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== PERSONAL GENERATOR VIEW ==================== -->
-      <div id="view-self" class="space-y-8 fade-in hidden">
-        <div class="bg-slate-950/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/30">
-          <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Your Details</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- From Hash -->
+          <div id="view-fromhash" class="space-y-6 hidden">
             <div>
-              <label class="block text-sm text-slate-400 mb-1.5">First Name</label>
-              <input type="text" id="self-firstname" placeholder="John" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" />
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Hash String</label>
+              <input type="text" id="hashInput" placeholder="Paste a hash to identify (e.g. 5d41402abc4b2a76b9719d911017c592)" autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base font-mono text-sm" />
             </div>
-            <div>
-              <label class="block text-sm text-slate-400 mb-1.5">Last Name</label>
-              <input type="text" id="self-lastname" placeholder="Doe" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" />
-            </div>
-            <div>
-              <label class="block text-sm text-slate-400 mb-1.5">Date of Birth</label>
-              <input type="date" id="self-dob" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-all" />
-            </div>
-            <div>
-              <label class="block text-sm text-slate-400 mb-1.5">Nickname / Pet Name</label>
-              <input type="text" id="self-nickname" placeholder="Buddy" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" />
-            </div>
-            <div>
-              <label class="block text-sm text-slate-400 mb-1.5">Favorite Number</label>
-              <input type="number" id="self-favnum" placeholder="7" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" />
-            </div>
-            <div>
-              <label class="block text-sm text-slate-400 mb-1.5">Favorite Color</label>
-              <input type="text" id="self-color" placeholder="Blue" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all" />
-            </div>
-          </div>
-          <button id="self-generate-btn" class="mt-6 w-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-medium rounded-xl px-6 py-3 transition-all flex items-center justify-center gap-2">
-            <i data-lucide="wand" class="w-5 h-5"></i>
-            Generate Password from My Info
-          </button>
-        </div>
-
-        <div id="self-result" class="hidden fade-in space-y-6">
-          <div class="relative group">
-            <div id="self-output" class="w-full bg-slate-950/70 border border-emerald-500/30 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-emerald-400 break-all min-h-[5rem] flex items-center"></div>
-            <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-              <button id="self-refresh" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all" title="Regenerate">
-                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-              </button>
-              <button id="self-copy" class="flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-slate-800 text-slate-300 hover:bg-slate-700">
-                <span id="self-copy-icon"></span>
-                <span id="self-copy-text" class="hidden md:inline text-sm">Copy</span>
-              </button>
-            </div>
-          </div>
-          <div id="self-strength" class="bg-slate-950/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/30">
-            <div class="flex justify-between items-center mb-3">
-              <div class="flex items-center gap-2">
-                <div id="self-strength-icon"></div>
-                <span id="self-strength-label" class="font-bold text-lg text-slate-300">Checking...</span>
+            <div id="identifyResults" class="space-y-3">
+              <div class="text-center text-slate-500 py-12">
+                <svg class="w-12 h-12 mx-auto mb-3 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <p>Enter a hash above to identify possible algorithms</p>
               </div>
-              <span id="self-score-text" class="text-lg font-mono text-slate-300">0%</span>
             </div>
-            <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-              <div id="self-progress" class="h-full bg-slate-700 transition-all duration-500 ease-out" style="width: 0%"></div>
+            <div id="hashDetails" class="hidden bg-slate-950/40 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/30 space-y-3">
+              <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Hash Analysis</h3>
+              <div id="hashDetailGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm"></div>
             </div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
   <script>
     lucide.createIcons();
 
+    // ================================================================
+    // ICONS
+    // ================================================================
     const icons = {
       shield: `<svg class="w-6 h-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg>`,
       shieldCheckE: `<svg class="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>`,
@@ -269,40 +297,80 @@
       check: `<svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>`
     };
 
-    const views = ['welcome', 'analyzer', 'generator', 'self'];
+    // ================================================================
+    // NAVIGATION
+    // ================================================================
+    const views = ['dashboard', 'fortify', 'hashfy'];
     const viewEls = {
-      welcome: document.getElementById('view-welcome'),
-      analyzer: document.getElementById('view-analyzer'),
-      generator: document.getElementById('view-generator'),
-      self: document.getElementById('view-self')
+      dashboard: document.getElementById('view-dashboard'),
+      fortify: document.getElementById('view-fortify'),
+      hashfy: document.getElementById('view-hashfy'),
     };
-    const tabEls = {
+    const headerBack = document.getElementById('headerBack');
+    const headerIcon = document.getElementById('headerIcon');
+    const headerTitle = document.getElementById('headerTitle');
+    const headerSub = document.getElementById('headerSub');
+
+    const fortifyViews = ['analyzer', 'generator', 'self'];
+    const hashfyViews = ['tohash', 'fromhash'];
+
+    function showView(id) {
+      views.forEach(v => viewEls[v].classList.toggle('hidden', v !== id));
+      headerBack.classList.toggle('hidden', id === 'dashboard');
+      if (id === 'dashboard') {
+        headerIcon.innerHTML = '<i data-lucide="shield" class="w-6 h-6"></i>';
+        headerTitle.textContent = 'Security Tools Suite';
+        headerSub.textContent = 'Password security & hash utilities';
+      } else if (id === 'fortify') {
+        headerIcon.innerHTML = '<i data-lucide="shield" class="w-6 h-6"></i>';
+        headerTitle.textContent = 'Fortify';
+        headerSub.textContent = 'Password strength & generation tools';
+      } else if (id === 'hashfy') {
+        headerIcon.innerHTML = '<i data-lucide="hash" class="w-6 h-6"></i>';
+        headerTitle.textContent = 'Hashfy';
+        headerSub.textContent = 'Hash conversion & identification tools';
+      }
+      lucide.createIcons();
+    }
+
+    headerBack.addEventListener('click', () => showView('dashboard'));
+    document.getElementById('dash-fortify').addEventListener('click', () => { showView('fortify'); switchFortifyTab('analyzer'); });
+    document.getElementById('dash-hashfy').addEventListener('click', () => { showView('hashfy'); switchHashfyTab('tohash'); });
+
+    // ================================================================
+    // FORTIFY - Tab switching
+    // ================================================================
+    const fortifyTabEls = {
       analyzer: document.getElementById('tab-analyzer'),
       generator: document.getElementById('tab-generator'),
       self: document.getElementById('tab-self')
     };
-    const tabNames = { analyzer: 'Analyzer', generator: 'Random Gen', self: 'Personal Gen' };
+    const fortifyViewEls = {
+      analyzer: document.getElementById('view-analyzer'),
+      generator: document.getElementById('view-generator'),
+      self: document.getElementById('view-self')
+    };
 
-    function tabClass(isActive) {
+    function fortifyTabClass(isActive) {
       return isActive
-        ? "flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/10"
-        : "flex-1 flex items-center justify-center gap-2 py-4 font-medium transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
+        ? "tab-btn text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/10"
+        : "tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
     }
 
-    function showView(id) {
-      views.forEach(v => viewEls[v].classList.toggle('hidden', v !== id));
-      ['analyzer', 'generator', 'self'].forEach(t => {
-        tabEls[t].className = tabClass(t === id);
+    function switchFortifyTab(id) {
+      Object.keys(fortifyTabEls).forEach(t => {
+        fortifyTabEls[t].className = fortifyTabClass(t === id);
+        fortifyViewEls[t].classList.toggle('hidden', t !== id);
       });
     }
 
-    tabEls.analyzer.addEventListener('click', () => showView('analyzer'));
-    tabEls.generator.addEventListener('click', () => showView('generator'));
-    tabEls.self.addEventListener('click', () => showView('self'));
+    fortifyTabEls.analyzer.addEventListener('click', () => switchFortifyTab('analyzer'));
+    fortifyTabEls.generator.addEventListener('click', () => switchFortifyTab('generator'));
+    fortifyTabEls.self.addEventListener('click', () => switchFortifyTab('self'));
 
-    document.getElementById('welcome-random').addEventListener('click', () => showView('generator'));
-    document.getElementById('welcome-self').addEventListener('click', () => showView('self'));
-
+    // ================================================================
+    // FORTIFY - Analyzer
+    // ================================================================
     const aInput = document.getElementById('analyzer-input');
     const aToggleVis = document.getElementById('analyzer-toggle-visibility');
     const aEyeIcon = document.getElementById('eye-icon');
@@ -312,7 +380,6 @@
     const aProgress = document.getElementById('analyzer-progress');
     const fContainer = document.getElementById('feedback-container');
     const fList = document.getElementById('feedback-list');
-
     let showPassword = false;
 
     aToggleVis.addEventListener('click', () => {
@@ -336,7 +403,6 @@
         aScoreText.textContent = '0%';
         aProgress.style.width = '0%';
         aProgress.className = 'h-full bg-slate-700 transition-all duration-500 ease-out';
-        
         setCriteria('length', 'At least 8 characters', false);
         setCriteria('uppercase', 'Uppercase letter', false);
         setCriteria('lowercase', 'Lowercase letter', false);
@@ -345,97 +411,49 @@
         fContainer.classList.add('hidden');
         return;
       }
-
-      let score = 0;
-      const feedback = [];
-      
-      const hasLength = pwd.length >= 8;
-      const hasLongLength = pwd.length >= 12;
-      const hasUppercase = /[A-Z]/.test(pwd);
-      const hasLowercase = /[a-z]/.test(pwd);
-      const hasNumbers = /[0-9]/.test(pwd);
-      const hasSymbols = /[^A-Za-z0-9]/.test(pwd);
-
+      let score = 0; const feedback = [];
+      const hasLength = pwd.length >= 8; const hasLongLength = pwd.length >= 12;
+      const hasUppercase = /[A-Z]/.test(pwd); const hasLowercase = /[a-z]/.test(pwd);
+      const hasNumbers = /[0-9]/.test(pwd); const hasSymbols = /[^A-Za-z0-9]/.test(pwd);
       score += Math.min(pwd.length * 4, 40);
-      if (hasUppercase) score += 10;
-      if (hasLowercase) score += 10;
-      if (hasNumbers) score += 10;
-      if (hasSymbols) score += 15;
-      
+      if (hasUppercase) score += 10; if (hasLowercase) score += 10;
+      if (hasNumbers) score += 10; if (hasSymbols) score += 15;
       if (hasUppercase && hasLowercase && hasNumbers && hasSymbols) score += 15;
-
-      if (/^[A-Za-z]+$/.test(pwd)) {
-        score -= 15;
-        feedback.push("Contains only letters. Add numbers and symbols.");
-      }
-      if (/^[0-9]+$/.test(pwd)) {
-        score -= 15;
-        feedback.push("Contains only numbers. Add letters and symbols.");
-      }
-      if (/(.)\1{2,}/.test(pwd)) {
-        score -= 15;
-        feedback.push("Avoid repeated characters (e.g., 'aaa').");
-      }
-      if (/(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)/i.test(pwd)) {
-        score -= 10;
-        feedback.push("Avoid sequential characters (e.g., 'abc').");
-      }
-      if (/(123|234|345|456|567|678|789|890)/.test(pwd)) {
-        score -= 10;
-        feedback.push("Avoid sequential numbers (e.g., '123').");
-      }
-
+      if (/^[A-Za-z]+$/.test(pwd)) { score -= 15; feedback.push("Contains only letters. Add numbers and symbols."); }
+      if (/^[0-9]+$/.test(pwd)) { score -= 15; feedback.push("Contains only numbers. Add letters and symbols."); }
+      if (/(.)\1{2,}/.test(pwd)) { score -= 15; feedback.push("Avoid repeated characters (e.g., 'aaa')."); }
+      if (/(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)/i.test(pwd)) { score -= 10; feedback.push("Avoid sequential characters (e.g., 'abc')."); }
+      if (/(123|234|345|456|567|678|789|890)/.test(pwd)) { score -= 10; feedback.push("Avoid sequential numbers (e.g., '123')."); }
       score = Math.max(0, Math.min(score, 100));
-
       if (!hasLength) feedback.push("Password should be at least 8 characters long.");
       else if (!hasLongLength) feedback.push("Consider making it 12+ characters for extra security.");
-
-      let label = 'Very Weak';
-      let colorClass = 'bg-red-500';
-      let textClass = 'text-red-400';
-      let iconHtml = icons.shieldAlertR;
-
-      if (score > 80) {
-        label = 'Very Strong'; colorClass = 'bg-emerald-500'; textClass = 'text-emerald-400'; iconHtml = icons.shieldCheckE;
-      } else if (score > 60) {
-        label = 'Strong'; colorClass = 'bg-teal-500'; textClass = 'text-teal-400'; iconHtml = icons.shieldCheckT;
-      } else if (score > 40) {
-        label = 'Moderate'; colorClass = 'bg-amber-500'; textClass = 'text-amber-400'; iconHtml = icons.alertTriangle;
-      } else if (score > 20) {
-        label = 'Weak'; colorClass = 'bg-orange-500'; textClass = 'text-orange-400'; iconHtml = icons.shieldAlertO;
-      }
-
-      aIcon.innerHTML = iconHtml;
-      aLabel.textContent = label;
+      let label = 'Very Weak'; let colorClass = 'bg-red-500'; let textClass = 'text-red-400'; let iconHtml = icons.shieldAlertR;
+      if (score > 80) { label = 'Very Strong'; colorClass = 'bg-emerald-500'; textClass = 'text-emerald-400'; iconHtml = icons.shieldCheckE; }
+      else if (score > 60) { label = 'Strong'; colorClass = 'bg-teal-500'; textClass = 'text-teal-400'; iconHtml = icons.shieldCheckT; }
+      else if (score > 40) { label = 'Moderate'; colorClass = 'bg-amber-500'; textClass = 'text-amber-400'; iconHtml = icons.alertTriangle; }
+      else if (score > 20) { label = 'Weak'; colorClass = 'bg-orange-500'; textClass = 'text-orange-400'; iconHtml = icons.shieldAlertO; }
+      aIcon.innerHTML = iconHtml; aLabel.textContent = label;
       aLabel.className = `text-2xl font-bold ${textClass}`;
       aScoreText.textContent = `${score}%`;
-      
       aProgress.className = `h-full ${colorClass} transition-all duration-500 ease-out`;
       aProgress.style.width = `${score}%`;
-
       setCriteria('length', 'At least 8 characters', hasLength);
       setCriteria('uppercase', 'Uppercase letter', hasUppercase);
       setCriteria('lowercase', 'Lowercase letter', hasLowercase);
       setCriteria('numbers', 'Number (0-9)', hasNumbers);
       setCriteria('symbols', 'Symbol (!@#$...)', hasSymbols);
-
       if (feedback.length > 0) {
         fContainer.classList.remove('hidden');
-        fList.innerHTML = feedback.map(msg => `
-          <li class="flex items-start gap-2 text-sm text-amber-400/90 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
-            ${icons.alertTriangleSmall}
-            <span>${msg}</span>
-          </li>
-        `).join('');
-      } else {
-        fContainer.classList.add('hidden');
-      }
+        fList.innerHTML = feedback.map(msg => `<li class="flex items-start gap-2 text-sm text-amber-400/90 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">${icons.alertTriangleSmall}<span>${msg}</span></li>`).join('');
+      } else fContainer.classList.add('hidden');
     }
 
     aInput.addEventListener('input', (e) => analyzePassword(e.target.value));
     analyzePassword('');
 
-    // ==================== PERSONAL GENERATOR LOGIC ====================
+    // ================================================================
+    // FORTIFY - Personal Generator
+    // ================================================================
     const selfResult = document.getElementById('self-result');
     const selfOutput = document.getElementById('self-output');
     const selfGenerateBtn = document.getElementById('self-generate-btn');
@@ -449,7 +467,6 @@
     const selfProgress = document.getElementById('self-progress');
 
     function pickRand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
     function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
 
     function generatePersonalPassword() {
@@ -459,143 +476,57 @@
       const nick = document.getElementById('self-nickname').value.trim();
       const favnum = document.getElementById('self-favnum').value.trim();
       const color = document.getElementById('self-color').value.trim();
-
-      if (!first && !last && !nick) {
-        selfOutput.textContent = 'Please fill in at least your first name or nickname';
-        selfOutput.className = 'w-full bg-slate-950/70 border border-amber-500/30 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-amber-400 break-all min-h-[5rem] flex items-center';
-        selfResult.classList.remove('hidden');
-        return;
-      }
-
+      if (!first && !last && !nick) { selfOutput.textContent = 'Please fill in at least your first name or nickname'; selfOutput.className = 'w-full bg-slate-950/70 border border-amber-500/30 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-amber-400 break-all min-h-[5rem] flex items-center'; selfResult.classList.remove('hidden'); return; }
       selfOutput.className = 'w-full bg-slate-950/70 border border-emerald-500/30 rounded-xl px-4 py-5 md:pr-32 font-mono text-xl md:text-2xl text-emerald-400 break-all min-h-[5rem] flex items-center';
-
-      const dobParts = dob ? dob.split('-') : [];
-      const dobYear = dobParts[0] || '';
-      const dobMonth = dobParts[1] || '';
-      const dobDay = dobParts[2] || '';
-
-      const sym = pickRand(['!','@','#','$','%','^','&','*','_','-','.']);
-      const sep = pickRand(['_', '-', '.', '']);
-
+      const dobParts = dob ? dob.split('-') : []; const dobYear = dobParts[0] || ''; const dobMonth = dobParts[1] || ''; const dobDay = dobParts[2] || '';
+      const sym = pickRand(['!','@','#','$','%','^','&','*','_','-','.']); const sep = pickRand(['_', '-', '.', '']);
       const f = first ? pickRand([first.toLowerCase(), cap(first), first.toUpperCase()]) : '';
       const l = last ? pickRand([last.toLowerCase(), cap(last), last.toUpperCase()]) : '';
       const n = nick ? pickRand([nick.toLowerCase(), cap(nick), nick.toUpperCase()]) : '';
       const c = color ? pickRand([color.toLowerCase(), cap(color), color.toUpperCase()]) : '';
-      const yr = dobYear;
-      const mn = dobMonth;
-      const dy = dobDay;
-      const num = favnum || '';
-
+      const yr = dobYear; const mn = dobMonth; const dy = dobDay; const num = favnum || '';
       const combos = [];
-
-      // Basic combos - name + year + symbol
-      if (f && yr) combos.push(f + yr + sym);
-      if (f && yr) combos.push(cap(f) + yr + sym);
-      if (f && yr && num) combos.push(f + sep + yr + sym + num);
-      if (f && l && yr) combos.push(f + sep + l + yr);
-      if (f && l && yr) combos.push(cap(f) + sep + cap(l) + yr);
-      if (f && l && yr && sym) combos.push(f + sep + l + sep + yr + sym);
-
-      // With nick
-      if (n && yr) combos.push(n + yr + sym);
-      if (f && n && yr) combos.push(f + sep + n + yr);
-
-      // With color
-      if (c && yr) combos.push(c + yr + sym);
-      if (f && c && yr) combos.push(f + sep + c + sep + yr);
-
-      // With day/month
-      if (f && dy) combos.push(f + dy + sym);
-      if (f && mn && dy) combos.push(f + sep + mn + dy);
-      if (f && l && dy) combos.push(cap(f) + sep + cap(l) + dy + sym);
-
-      // With favorite number
-      if (f && num) combos.push(f + sym + num);
-      if (f && yr && num) combos.push(f + sep + yr + sep + num + sym);
-
-      // Longer combos (3+ fields)
-      if (f && l && yr && sym) combos.push(cap(f) + sep + cap(l) + sep + yr + sym);
-      if (f && l && n && yr) combos.push(f + sep + l + sep + n + yr);
-      if (f && c && yr && sym) combos.push(cap(f) + sep + cap(c) + sep + yr + sym);
-      if (f && l && c && yr) combos.push(f + sep + l + sep + c + sep + yr);
-      if (f && yr && mn && dy) combos.push(f + sep + yr + sep + mn + sep + dy);
-      if (f && l && yr && num) combos.push(f + sep + l + sep + yr + sym + num);
-      if (f && n && yr && sym) combos.push(cap(f) + sep + cap(n) + sep + yr + sym);
-      if (f && l && n && yr && sym) combos.push(f + sep + l + sep + n + sep + yr + sym);
-      if (f && l && c && yr && num) combos.push(f + sep + l + sep + c + sep + yr + sym + num);
-
-      // Month+Day as words
+      if (f && yr) combos.push(f + yr + sym); if (f && yr) combos.push(cap(f) + yr + sym);
+      if (f && yr && num) combos.push(f + sep + yr + sym + num); if (f && l && yr) combos.push(f + sep + l + yr);
+      if (f && l && yr) combos.push(cap(f) + sep + cap(l) + yr); if (f && l && yr && sym) combos.push(f + sep + l + sep + yr + sym);
+      if (n && yr) combos.push(n + yr + sym); if (f && n && yr) combos.push(f + sep + n + yr);
+      if (c && yr) combos.push(c + yr + sym); if (f && c && yr) combos.push(f + sep + c + sep + yr);
+      if (f && dy) combos.push(f + dy + sym); if (f && mn && dy) combos.push(f + sep + mn + dy);
+      if (f && l && dy) combos.push(cap(f) + sep + cap(l) + dy + sym); if (f && num) combos.push(f + sym + num);
+      if (f && yr && num) combos.push(f + sep + yr + sep + num + sym); if (f && l && yr && sym) combos.push(cap(f) + sep + cap(l) + sep + yr + sym);
+      if (f && l && n && yr) combos.push(f + sep + l + sep + n + yr); if (f && c && yr && sym) combos.push(cap(f) + sep + cap(c) + sep + yr + sym);
+      if (f && l && c && yr) combos.push(f + sep + l + sep + c + sep + yr); if (f && yr && mn && dy) combos.push(f + sep + yr + sep + mn + sep + dy);
+      if (f && l && yr && num) combos.push(f + sep + l + sep + yr + sym + num); if (f && n && yr && sym) combos.push(cap(f) + sep + cap(n) + sep + yr + sym);
+      if (f && l && n && yr && sym) combos.push(f + sep + l + sep + n + sep + yr + sym); if (f && l && c && yr && num) combos.push(f + sep + l + sep + c + sep + yr + sym + num);
       const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const monthWord = mn ? monthNames[parseInt(mn)] || mn : '';
-      if (f && monthWord && dy) combos.push(f + sep + monthWord + dy);
-      if (f && monthWord && yr) combos.push(f + sep + monthWord + sep + yr + sym);
+      if (f && monthWord && dy) combos.push(f + sep + monthWord + dy); if (f && monthWord && yr) combos.push(f + sep + monthWord + sep + yr + sym);
       if (f && l && monthWord && yr) combos.push(f + sep + l + sep + monthWord + sep + yr);
-
-      // Fallback if no combos generated
-      if (combos.length === 0) {
-        if (f) combos.push(cap(f) + sym + (yr || num || '99'));
-        else if (n) combos.push(cap(n) + sym + (yr || num || '99'));
-        else combos.push('Password' + sym + '123');
-      }
-
-      const finalPwd = pickRand(combos);
-
-      selfOutput.textContent = finalPwd;
-
-      // strength analysis
-      const sl = finalPwd.length >= 8;
-      const sU = /[A-Z]/.test(finalPwd);
-      const sL = /[a-z]/.test(finalPwd);
-      const sN = /[0-9]/.test(finalPwd);
-      const sS = /[^A-Za-z0-9]/.test(finalPwd);
-      let sc = Math.min(finalPwd.length * 4, 40);
-      if (sU) sc += 10;
-      if (sL) sc += 10;
-      if (sN) sc += 10;
-      if (sS) sc += 15;
-      if (sU && sL && sN && sS) sc += 15;
+      if (combos.length === 0) { if (f) combos.push(cap(f) + sym + (yr || num || '99')); else if (n) combos.push(cap(n) + sym + (yr || num || '99')); else combos.push('Password' + sym + '123'); }
+      const finalPwd = pickRand(combos); selfOutput.textContent = finalPwd;
+      const sl = finalPwd.length >= 8; const sU = /[A-Z]/.test(finalPwd); const sL = /[a-z]/.test(finalPwd); const sN = /[0-9]/.test(finalPwd); const sS = /[^A-Za-z0-9]/.test(finalPwd);
+      let sc = Math.min(finalPwd.length * 4, 40); if (sU) sc += 10; if (sL) sc += 10; if (sN) sc += 10; if (sS) sc += 15; if (sU && sL && sN && sS) sc += 15;
       sc = Math.max(0, Math.min(sc, 100));
-
       let label = 'Very Weak', cc = 'bg-red-500', tc = 'text-red-400', ic = icons.shieldAlertR;
-      if (sc > 80) { label = 'Very Strong'; cc = 'bg-emerald-500'; tc = 'text-emerald-400'; ic = icons.shieldCheckE; }
-      else if (sc > 60) { label = 'Strong'; cc = 'bg-teal-500'; tc = 'text-teal-400'; ic = icons.shieldCheckT; }
-      else if (sc > 40) { label = 'Moderate'; cc = 'bg-amber-500'; tc = 'text-amber-400'; ic = icons.alertTriangle; }
-      else if (sc > 20) { label = 'Weak'; cc = 'bg-orange-500'; tc = 'text-orange-400'; ic = icons.shieldAlertO; }
-
-      selfStrengthIcon.innerHTML = ic;
-      selfStrengthLabel.textContent = label;
-      selfStrengthLabel.className = `font-bold text-lg ${tc}`;
-      selfScoreText.textContent = `${sc}%`;
-      selfProgress.className = `h-full ${cc} transition-all duration-500 ease-out`;
-      selfProgress.style.width = `${sc}%`;
-
-      selfResult.classList.remove('hidden');
-      resetSelfCopy();
+      if (sc > 80) { label = 'Very Strong'; cc = 'bg-emerald-500'; tc = 'text-emerald-400'; ic = icons.shieldCheckE; } else if (sc > 60) { label = 'Strong'; cc = 'bg-teal-500'; tc = 'text-teal-400'; ic = icons.shieldCheckT; } else if (sc > 40) { label = 'Moderate'; cc = 'bg-amber-500'; tc = 'text-amber-400'; ic = icons.alertTriangle; } else if (sc > 20) { label = 'Weak'; cc = 'bg-orange-500'; tc = 'text-orange-400'; ic = icons.shieldAlertO; }
+      selfStrengthIcon.innerHTML = ic; selfStrengthLabel.textContent = label; selfStrengthLabel.className = `font-bold text-lg ${tc}`;
+      selfScoreText.textContent = `${sc}%`; selfProgress.className = `h-full ${cc} transition-all duration-500 ease-out`; selfProgress.style.width = `${sc}%`;
+      selfResult.classList.remove('hidden'); resetSelfCopy();
     }
 
-    function resetSelfCopy() {
-      selfCopyIcon.innerHTML = icons.copy;
-      selfCopyText.textContent = 'Copy';
-      selfCopy.className = 'flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-slate-800 text-slate-300 hover:bg-slate-700';
-    }
-
+    function resetSelfCopy() { selfCopyIcon.innerHTML = icons.copy; selfCopyText.textContent = 'Copy'; selfCopy.className = 'flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-slate-800 text-slate-300 hover:bg-slate-700'; }
     selfGenerateBtn.addEventListener('click', generatePersonalPassword);
     selfRefresh.addEventListener('click', generatePersonalPassword);
     selfCopy.addEventListener('click', () => {
-      const pwd = selfOutput.textContent;
-      if (!pwd || pwd.includes('fill in')) return;
-      const ta = document.createElement('textarea');
-      ta.value = pwd;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      selfCopyIcon.innerHTML = icons.check;
-      selfCopyText.textContent = 'Copied';
-      selfCopy.className = 'flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-emerald-500/20 text-emerald-400';
+      const pwd = selfOutput.textContent; if (!pwd || pwd.includes('fill in')) return;
+      const ta = document.createElement('textarea'); ta.value = pwd; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+      selfCopyIcon.innerHTML = icons.check; selfCopyText.textContent = 'Copied'; selfCopy.className = 'flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-emerald-500/20 text-emerald-400';
       setTimeout(resetSelfCopy, 2000);
     });
 
+    // ================================================================
+    // FORTIFY - Random Generator
+    // ================================================================
     let genOptions = { uppercase: true, lowercase: true, numbers: true, symbols: true };
     const genOutput = document.getElementById('gen-output');
     const genLength = document.getElementById('gen-length');
@@ -604,162 +535,299 @@
     const btnCopy = document.getElementById('gen-copy');
     const copyIcon = document.getElementById('gen-copy-icon');
     const copyText = document.getElementById('gen-copy-text');
-
     const checkboxes = document.querySelectorAll('.opt-checkbox');
 
     function generatePassword() {
       const length = parseInt(genLength.value);
-      const charSets = {
-        uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        lowercase: 'abcdefghijklmnopqrstuvwxyz',
-        numbers: '0123456789',
-        symbols: '!@#$%^&*()_+~`|}{[]:;?><,./-=',
-      };
-
-      let allowedChars = '';
-      let generatedPass = '';
-      const guaranteedChars = [];
-
-      Object.keys(genOptions).forEach(key => {
-        if (genOptions[key]) {
-          allowedChars += charSets[key];
-          guaranteedChars.push(charSets[key][Math.floor(Math.random() * charSets[key].length)]);
-        }
-      });
-
-      if (allowedChars.length === 0) {
-        genOutput.textContent = '';
-        return;
-      }
-
-      for (let i = 0; i < length - guaranteedChars.length; i++) {
-        generatedPass += allowedChars[Math.floor(Math.random() * allowedChars.length)];
-      }
-
+      const charSets = { uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', lowercase: 'abcdefghijklmnopqrstuvwxyz', numbers: '0123456789', symbols: '!@#$%^&*()_+~`|}{[]:;?><,./-=' };
+      let allowedChars = ''; let generatedPass = ''; const guaranteedChars = [];
+      Object.keys(genOptions).forEach(key => { if (genOptions[key]) { allowedChars += charSets[key]; guaranteedChars.push(charSets[key][Math.floor(Math.random() * charSets[key].length)]); } });
+      if (allowedChars.length === 0) { genOutput.textContent = ''; return; }
+      for (let i = 0; i < length - guaranteedChars.length; i++) generatedPass += allowedChars[Math.floor(Math.random() * allowedChars.length)];
       let finalPassword = (generatedPass + guaranteedChars.join('')).split('');
-      for (let i = finalPassword.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [finalPassword[i], finalPassword[j]] = [finalPassword[j], finalPassword[i]];
-      }
-
-      genOutput.textContent = finalPassword.join('');
-      resetCopyButton();
+      for (let i = finalPassword.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [finalPassword[i], finalPassword[j]] = [finalPassword[j], finalPassword[i]]; }
+      genOutput.textContent = finalPassword.join(''); resetCopyButton();
     }
 
-    function resetCopyButton() {
-      copyIcon.innerHTML = icons.copy;
-      copyText.textContent = 'Copy';
-      btnCopy.className = 'flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-slate-800 text-slate-300 hover:bg-slate-700';
-    }
-
+    function resetCopyButton() { copyIcon.innerHTML = icons.copy; copyText.textContent = 'Copy'; btnCopy.className = 'flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-slate-800 text-slate-300 hover:bg-slate-700'; }
     function handleCopy() {
-      const pwd = genOutput.textContent;
-      if (!pwd || pwd === 'Select options to generate') return;
-
-      const textarea = document.createElement('textarea');
-      textarea.value = pwd;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-
-      copyIcon.innerHTML = icons.check;
-      copyText.textContent = 'Copied';
-      btnCopy.className = 'flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-emerald-500/20 text-emerald-400';
-      
+      const pwd = genOutput.textContent; if (!pwd || pwd === 'Select options to generate') return;
+      const textarea = document.createElement('textarea'); textarea.value = pwd; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); document.body.removeChild(textarea);
+      copyIcon.innerHTML = icons.check; copyText.textContent = 'Copied'; btnCopy.className = 'flex items-center gap-2 px-3 py-2 rounded-lg transition-all font-medium bg-emerald-500/20 text-emerald-400';
       setTimeout(resetCopyButton, 2000);
     }
 
-    function updateCheckboxUI(id, checked) {
-      const label = document.getElementById(`lbl-${id}`);
-      const title = label.querySelector('.lbl-title');
-      const box = label.querySelector('.chk-box');
-      
-      if (checked) {
-        label.className = "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm";
-        title.className = "font-medium text-emerald-400 lbl-title";
-        box.className = "chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950";
-      } else {
-        label.className = "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-slate-950/50 border-slate-700/50 hover:border-slate-600 backdrop-blur-sm";
-        title.className = "font-medium text-slate-300 lbl-title";
-        box.className = "chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-slate-800/70 text-transparent";
-      }
-    }
-
-    genLength.addEventListener('input', (e) => {
-      genLenDisp.textContent = e.target.value;
-      generatePassword();
-    });
-
+    genLength.addEventListener('input', (e) => { genLenDisp.textContent = e.target.value; generatePassword(); });
     checkboxes.forEach(chk => {
       chk.addEventListener('change', (e) => {
         const id = e.target.id.replace('opt-', '');
-        
         const activeCount = Object.values(genOptions).filter(Boolean).length;
-        if (activeCount === 1 && !e.target.checked) {
-          e.target.checked = true;
-          return;
-        }
-
+        if (activeCount === 1 && !e.target.checked) { e.target.checked = true; return; }
         genOptions[id] = e.target.checked;
-        updateCheckboxUI(id, e.target.checked);
+        const label = document.getElementById(`lbl-${id}`);
+        const title = label.querySelector('.lbl-title'); const box = label.querySelector('.chk-box');
+        if (e.target.checked) { label.className = "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-emerald-500/10 border-emerald-500/30 backdrop-blur-sm"; title.className = "font-medium text-emerald-400 lbl-title"; box.className = "chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-emerald-500 text-slate-950"; }
+        else { label.className = "flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all bg-slate-950/50 border-slate-700/50 hover:border-slate-600 backdrop-blur-sm"; title.className = "font-medium text-slate-300 lbl-title"; box.className = "chk-box w-6 h-6 rounded flex items-center justify-center transition-colors bg-slate-800/70 text-transparent"; }
         generatePassword();
       });
     });
 
     btnRefresh.addEventListener('click', generatePassword);
     btnCopy.addEventListener('click', handleCopy);
+    resetCopyButton(); generatePassword();
 
-    resetCopyButton();
-    generatePassword();
+    // ================================================================
+    // HASHFY - Tab switching
+    // ================================================================
+    const hashfyTabEls = {
+      tohash: document.getElementById('tab-tohash'),
+      fromhash: document.getElementById('tab-fromhash')
+    };
+    const hashfyViewEls = {
+      tohash: document.getElementById('view-tohash'),
+      fromhash: document.getElementById('view-fromhash')
+    };
 
-    // ==================== MATRIX RAIN BACKGROUND ====================
+    function switchHashfyTab(id) {
+      Object.keys(hashfyTabEls).forEach(t => {
+        hashfyTabEls[t].className = 'tab-btn ' + (t === id ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50');
+        hashfyViewEls[t].classList.toggle('hidden', t !== id);
+      });
+    }
+
+    hashfyTabEls.tohash.addEventListener('click', () => switchHashfyTab('tohash'));
+    hashfyTabEls.fromhash.addEventListener('click', () => switchHashfyTab('fromhash'));
+
+    // ================================================================
+    // HASHFY - MD5 / MD4 / Crypto helpers
+    // ================================================================
+    const MD5 = (function() {
+      function F(x,y,z) { return (x & y) | (~x & z); } function G(x,y,z) { return (x & z) | (y & ~z); }
+      function H(x,y,z) { return x ^ y ^ z; } function I(x,y,z) { return y ^ (x | ~z); }
+      function rotl(x,n) { return (x << n) | (x >>> (32-n)); }
+      function FF(a,b,c,d,x,s,t) { a = rotl(a + F(b,c,d) + x + t, s) + b; return a; }
+      function GG(a,b,c,d,x,s,t) { a = rotl(a + G(b,c,d) + x + t, s) + b; return a; }
+      function HH(a,b,c,d,x,s,t) { a = rotl(a + H(b,c,d) + x + t, s) + b; return a; }
+      function II(a,b,c,d,x,s,t) { a = rotl(a + I(b,c,d) + x + t, s) + b; return a; }
+      function strToBytes(s) { const enc = encodeURIComponent(s); const bytes = []; for (let i = 0; i < enc.length; i++) { const c = enc.charCodeAt(i); if (c === 37) { bytes.push(parseInt(enc.substr(i+1,2),16)); i += 2; } else bytes.push(c); } return bytes; }
+      return function(s) {
+        const bytes = strToBytes(s); const len = bytes.length; const ml = len * 8;
+        bytes.push(0x80); while (bytes.length % 64 !== 56) bytes.push(0);
+        for (let i = 0; i < 8; i++) bytes.push((ml >>> (i*8)) & 0xff);
+        let a=0x67452301, b=0xefcdab89, c=0x98badcfe, d=0x10325476;
+        const S = [7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+        const T = new Array(64); for (let i = 0; i < 64; i++) T[i] = Math.floor(Math.abs(Math.sin(i+1)) * 0x100000000);
+        for (let i = 0; i < bytes.length; i += 64) {
+          const X = []; for (let j = 0; j < 16; j++) X[j] = bytes[i+j*4] | (bytes[i+j*4+1]<<8) | (bytes[i+j*4+2]<<16) | (bytes[i+j*4+3]<<24);
+          let A=a, B=b, C=c, D=d;
+          for (let j = 0; j < 64; j++) { let t; if (j < 16) t = FF(A,B,C,D,X[j],S[j],T[j]); else if (j < 32) t = GG(A,B,C,D,X[(j*5+1)%16],S[j],T[j]); else if (j < 48) t = HH(A,B,C,D,X[(j*3+5)%16],S[j],T[j]); else t = II(A,B,C,D,X[j*7%16],S[j],T[j]); A = D; D = C; C = B; B = t; }
+          a += A; b += B; c += C; d += D;
+        }
+        function hex(n) { const h = (n >>> 0).toString(16); return '00000000'.substring(h.length) + h; }
+        return hex(a) + hex(b) + hex(c) + hex(d);
+      };
+    })();
+
+    function MD4(s) {
+      const bytes = []; for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); bytes.push(c & 0xff); bytes.push((c >>> 8) & 0xff); }
+      const len = bytes.length; const ml = len * 8;
+      bytes.push(0x80); while (bytes.length % 64 !== 56) bytes.push(0);
+      for (let i = 0; i < 8; i++) bytes.push((ml >>> (i*8)) & 0xff);
+      function rotl(n, s) { return (n << s) | (n >>> (32-s)); }
+      function F(x,y,z) { return (x & y) | (~x & z); } function G(x,y,z) { return (x & y) | (x & z) | (y & z); } function H(x,y,z) { return x ^ y ^ z; }
+      let a=0x67452301, b=0xefcdab89, c=0x98badcfe, d=0x10325476;
+      for (let i = 0; i < bytes.length; i += 64) {
+        const X = []; for (let j = 0; j < 16; j++) X[j] = bytes[i+j*4] | (bytes[i+j*4+1]<<8) | (bytes[i+j*4+2]<<16) | (bytes[i+j*4+3]<<24);
+        let A=a, B=b, C=c, D=d;
+        A = rotl(A + F(B,C,D) + X[0], 3); D = rotl(D + F(A,B,C) + X[1], 7); C = rotl(C + F(D,A,B) + X[2], 11); B = rotl(B + F(C,D,A) + X[3], 19);
+        A = rotl(A + F(B,C,D) + X[4], 3); D = rotl(D + F(A,B,C) + X[5], 7); C = rotl(C + F(D,A,B) + X[6], 11); B = rotl(B + F(C,D,A) + X[7], 19);
+        A = rotl(A + F(B,C,D) + X[8], 3); D = rotl(D + F(A,B,C) + X[9], 7); C = rotl(C + F(D,A,B) + X[10], 11); B = rotl(B + F(C,D,A) + X[11], 19);
+        A = rotl(A + F(B,C,D) + X[12], 3); D = rotl(D + F(A,B,C) + X[13], 7); C = rotl(C + F(D,A,B) + X[14], 11); B = rotl(B + F(C,D,A) + X[15], 19);
+        A = rotl(A + G(B,C,D) + X[0] + 0x5a827999, 3); D = rotl(D + G(A,B,C) + X[4] + 0x5a827999, 5); C = rotl(C + G(D,A,B) + X[8] + 0x5a827999, 9); B = rotl(B + G(C,D,A) + X[12] + 0x5a827999, 13);
+        A = rotl(A + G(B,C,D) + X[1] + 0x5a827999, 3); D = rotl(D + G(A,B,C) + X[5] + 0x5a827999, 5); C = rotl(C + G(D,A,B) + X[9] + 0x5a827999, 9); B = rotl(B + G(C,D,A) + X[13] + 0x5a827999, 13);
+        A = rotl(A + G(B,C,D) + X[2] + 0x5a827999, 3); D = rotl(D + G(A,B,C) + X[6] + 0x5a827999, 5); C = rotl(C + G(D,A,B) + X[10] + 0x5a827999, 9); B = rotl(B + G(C,D,A) + X[14] + 0x5a827999, 13);
+        A = rotl(A + G(B,C,D) + X[3] + 0x5a827999, 3); D = rotl(D + G(A,B,C) + X[7] + 0x5a827999, 5); C = rotl(C + G(D,A,B) + X[11] + 0x5a827999, 9); B = rotl(B + G(C,D,A) + X[15] + 0x5a827999, 13);
+        A = rotl(A + H(B,C,D) + X[0] + 0x6ed9eba1, 3); D = rotl(D + H(A,B,C) + X[8] + 0x6ed9eba1, 9); C = rotl(C + H(D,A,B) + X[4] + 0x6ed9eba1, 11); B = rotl(B + H(C,D,A) + X[12] + 0x6ed9eba1, 15);
+        A = rotl(A + H(B,C,D) + X[2] + 0x6ed9eba1, 3); D = rotl(D + H(A,B,C) + X[10] + 0x6ed9eba1, 9); C = rotl(C + H(D,A,B) + X[6] + 0x6ed9eba1, 11); B = rotl(B + H(C,D,A) + X[14] + 0x6ed9eba1, 15);
+        A = rotl(A + H(B,C,D) + X[1] + 0x6ed9eba1, 3); D = rotl(D + H(A,B,C) + X[9] + 0x6ed9eba1, 9); C = rotl(C + H(D,A,B) + X[5] + 0x6ed9eba1, 11); B = rotl(B + H(C,D,A) + X[13] + 0x6ed9eba1, 15);
+        A = rotl(A + H(B,C,D) + X[3] + 0x6ed9eba1, 3); D = rotl(D + H(A,B,C) + X[11] + 0x6ed9eba1, 9); C = rotl(C + H(D,A,B) + X[7] + 0x6ed9eba1, 11); B = rotl(B + H(C,D,A) + X[15] + 0x6ed9eba1, 15);
+        a += A; b += B; c += C; d += D;
+      }
+      function hex(n) { const h = (n >>> 0).toString(16); return '00000000'.substring(h.length) + h; }
+      return hex(a) + hex(b) + hex(c) + hex(d);
+    }
+    function ntlmHash(s) { return MD4(s); }
+
+    function strToBuf(s) { return new TextEncoder().encode(s); }
+    function bufToHex(buf) { return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join(''); }
+    function hexToBytes(hex) { const bytes = []; for (let i = 0; i < hex.length; i += 2) bytes.push(parseInt(hex.substr(i, 2), 16)); return new Uint8Array(bytes); }
+
+    async function sha1(s) { return bufToHex(await crypto.subtle.digest('SHA-1', strToBuf(s))); }
+    async function sha256(s) { return bufToHex(await crypto.subtle.digest('SHA-256', strToBuf(s))); }
+    async function sha512(s) { return bufToHex(await crypto.subtle.digest('SHA-512', strToBuf(s))); }
+    async function pbkdf2Hash(pwd, salt, i = 100000, kl = 32) {
+      const key = await crypto.subtle.importKey('raw', strToBuf(pwd), 'PBKDF2', false, ['deriveBits']);
+      return bufToHex(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: strToBuf(salt), iterations: i, hash: 'SHA-256' }, key, kl * 8));
+    }
+    async function scryptHash(pwd, salt, N = 16384, r = 8, p = 1, kl = 32) {
+      const key = await crypto.subtle.importKey('raw', strToBuf(pwd), { name: 'SCrypt' }, false, ['deriveBits']);
+      return bufToHex(await crypto.subtle.deriveBits({ name: 'SCrypt', salt: strToBuf(salt), cost: N, blockSize: r, parallel: p }, key, kl * 8));
+    }
+    function bcryptHash(pwd, salt) {
+      if (salt) { const h = MD5(salt); const bytes = hexToBytes(h); const b64 = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '.').replace(/\//g, 'A').substring(0, 22); return bcrypt.hashSync(pwd, '$2a$10$' + b64); }
+      return bcrypt.hashSync(pwd, bcrypt.genSaltSync(10));
+    }
+    async function argon2Hash(pwd, salt) {
+      const result = await argon2.hash({ pass: pwd, salt: salt || 'somesalt', time: 2, mem: 65536, parallelism: 1, hashLen: 32, type: argon2.ArgonType.Argon2id });
+      return bufToHex(result.hash);
+    }
+
+    const hashAlgos = [
+      { id: 'md5', name: 'MD5', bits: 128, sec: 'broken', needSalt: false, fn: async (p,s) => MD5(p) },
+      { id: 'sha1', name: 'SHA-1', bits: 160, sec: 'broken', needSalt: false, fn: async (p,s) => sha1(p) },
+      { id: 'sha256', name: 'SHA-256', bits: 256, sec: 'weak', needSalt: false, fn: async (p,s) => sha256(p) },
+      { id: 'sha512', name: 'SHA-512', bits: 512, sec: 'weak', needSalt: false, fn: async (p,s) => sha512(p) },
+      { id: 'ntlm', name: 'NTLM', bits: 128, sec: 'weak', needSalt: false, fn: async (p,s) => ntlmHash(p) },
+      { id: 'bcrypt', name: 'bcrypt', bits: 184, sec: 'good', needSalt: true, fn: async (p,s) => bcryptHash(p, s || bcrypt.genSaltSync(10)) },
+      { id: 'scrypt', name: 'scrypt', bits: 256, sec: 'good', needSalt: true, fn: async (p,s) => scryptHash(p, s || 'somesalt') },
+      { id: 'pbkdf2', name: 'PBKDF2', bits: 256, sec: 'good', needSalt: true, fn: async (p,s) => pbkdf2Hash(p, s || 'somesalt') },
+      { id: 'argon2', name: 'Argon2', bits: 256, sec: 'good', needSalt: true, fn: async (p,s) => argon2Hash(p, s || 'somesalt') },
+      { id: 'yescrypt', name: 'yescrypt', bits: 256, sec: 'good', needSalt: false, fn: async (p,s) => { throw new Error('Not available in browser'); } },
+    ];
+
+    const hashSecStyles = {
+      broken: { dot: 'bg-red-500', label: 'Broken', badge: 'bg-red-500/15 text-red-400 border-red-500/25' },
+      weak: { dot: 'bg-amber-500', label: 'Weak', badge: 'bg-amber-500/15 text-amber-400 border-amber-500/25' },
+      good: { dot: 'bg-emerald-500', label: 'Good', badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' },
+    };
+
+    const hPwdInput = document.getElementById('passwordInput');
+    const hSaltInput = document.getElementById('saltInput');
+    const hResultsBody = document.getElementById('hashResultsBody');
+    const hStatusText = document.getElementById('hashStatusText');
+    let hTimeout = null;
+
+    function hashRenderRow(algo, hash, loading, error) {
+      const sec = hashSecStyles[algo.sec];
+      const bl = algo.bits + (algo.id === 'scrypt' || algo.id === 'pbkdf2' || algo.id === 'argon2' || algo.id === 'yescrypt' ? '*' : '');
+      return `<tr class="border-b border-slate-800/50 hover:bg-slate-800/20 transition-colors fade-in">
+        <td class="py-3 px-2"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full ${sec.dot}"></span><span class="font-medium text-slate-200">${algo.name}</span></div></td>
+        <td class="py-3 px-2">${loading ? '<div class="flex items-center gap-2"><div class="spinner"></div><span class="text-slate-500 text-xs">Hashing...</span></div>' : error ? '<span class="text-red-400 text-xs">' + error + '</span>' : '<code class="hash-cell text-xs text-indigo-300/90 block max-w-[320px] md:max-w-[480px] lg:max-w-[600px]" title="' + hash + '">' + hash + '</code>'}</td>
+        <td class="py-3 px-2 text-center text-xs text-slate-500 font-mono">${bl}</td>
+        <td class="py-3 px-2 text-center"><span class="inline-block text-xs font-medium px-2 py-0.5 rounded-full border ${sec.badge}">${sec.label}</span></td>
+        <td class="py-3 px-2 text-center"><button class="copy-btn text-slate-600 hover:text-indigo-400 transition-colors p-1.5 rounded-lg hover:bg-indigo-500/10 ${!hash || loading || error ? 'opacity-30 pointer-events-none' : ''}" data-hash="${hash || ''}" ${hash ? '' : 'disabled'}><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button></td>
+      </tr>`;
+    }
+
+    function hashRenderInit() { hResultsBody.innerHTML = hashAlgos.map(a => hashRenderRow(a, '', false, false)).join(''); }
+
+    async function hashComputeAll() {
+      const pwd = hPwdInput.value; const salt = hSaltInput.value || 'somesalt';
+      if (!pwd) { hashRenderInit(); hStatusText.textContent = ''; return; }
+      hResultsBody.innerHTML = hashAlgos.map(a => hashRenderRow(a, '', true, false)).join('');
+      hStatusText.innerHTML = '<span class="flex items-center gap-2"><div class="spinner"></div> Computing hashes...</span>';
+      const rows = hResultsBody.querySelectorAll('tr');
+      const results = await Promise.allSettled(hashAlgos.map(async (algo, i) => {
+        try { const hash = await algo.fn(pwd, algo.needSalt ? salt : ''); return { i, hash, error: null }; } catch(e) { return { i, hash: null, error: e.message || 'Error' }; }
+      }));
+      for (const res of results) { if (res.status === 'fulfilled') { const { i, hash, error } = res.value; rows[i].outerHTML = hashRenderRow(hashAlgos[i], hash || '', false, error); } }
+      hStatusText.textContent = 'All hashes computed';
+    }
+
+    hPwdInput.addEventListener('input', () => { clearTimeout(hTimeout); hTimeout = setTimeout(hashComputeAll, 200); });
+    hSaltInput.addEventListener('input', () => { clearTimeout(hTimeout); hTimeout = setTimeout(hashComputeAll, 200); });
+    hashRenderInit();
+
+    function showToast(msg) {
+      const old = document.querySelector('.copied-toast'); if (old) old.remove();
+      const toast = document.createElement('div'); toast.className = 'copied-toast'; toast.textContent = msg;
+      document.body.appendChild(toast); setTimeout(() => toast.remove(), 2000);
+    }
+
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.copy-btn');
+      if (!btn || btn.disabled) return;
+      const hash = btn.dataset.hash; if (!hash) return;
+      navigator.clipboard.writeText(hash).then(() => showToast('Copied')).catch(() => {
+        const ta = document.createElement('textarea'); ta.value = hash; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('Copied');
+      });
+    });
+
+    // ================================================================
+    // HASHFY - From Hash (Identify)
+    // ================================================================
+    const hashInput = document.getElementById('hashInput');
+    const identifyResults = document.getElementById('identifyResults');
+    const hashDetails = document.getElementById('hashDetails');
+    const hashDetailGrid = document.getElementById('hashDetailGrid');
+    let identTimeout = null;
+
+    const hashIdentifiers = [
+      { id: 'argon2', name: 'Argon2', match: h => /^\$argon2(id|i|d)\$/.test(h), bits: 'Variable', desc: 'Starts with $argon2', sec: 'good' },
+      { id: 'bcrypt', name: 'bcrypt', match: h => /^\$(2[abyx]|2b)\$/.test(h) && h.length === 60, bits: '184', desc: 'Starts with $2b$ / 60 chars', sec: 'good' },
+      { id: 'yescrypt', name: 'yescrypt', match: h => /^\$y\$/.test(h), bits: 'Variable', desc: 'Starts with $y$', sec: 'good' },
+      { id: 'sha512', name: 'SHA-512', match: h => /^[0-9a-fA-F]{128}$/.test(h), bits: '512', desc: '128 hex chars', sec: 'weak' },
+      { id: 'sha256', name: 'SHA-256', match: h => /^[0-9a-fA-F]{64}$/.test(h), bits: '256', desc: '64 hex chars', sec: 'weak' },
+      { id: 'sha1', name: 'SHA-1', match: h => /^[0-9a-fA-F]{40}$/.test(h), bits: '160', desc: '40 hex chars', sec: 'broken' },
+      { id: 'md5', name: 'MD5', match: h => /^[0-9a-fA-F]{32}$/.test(h), bits: '128', desc: '32 hex chars', sec: 'broken' },
+      { id: 'ntlm', name: 'NTLM', match: h => /^[0-9a-fA-F]{32}$/.test(h), bits: '128', desc: '32 hex chars (same format as MD5)', sec: 'weak' },
+      { id: 'pbkdf2', name: 'PBKDF2', match: h => /^[0-9a-fA-F]{64}$/.test(h) || /^\$pbkdf2/.test(h), bits: '256', desc: '64 hex chars or $pbkdf2 prefix', sec: 'good' },
+      { id: 'scrypt', name: 'scrypt', match: h => /^[0-9a-fA-F]{64}$/.test(h), bits: '256', desc: '64 hex chars', sec: 'good' },
+    ];
+
+    function analyzeHash(raw) {
+      const h = raw.trim();
+      if (!h) {
+        identifyResults.innerHTML = `<div class="text-center text-slate-500 py-12"><svg class="w-12 h-12 mx-auto mb-3 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><p>Enter a hash above to identify possible algorithms</p></div>`;
+        hashDetails.classList.add('hidden'); return;
+      }
+      const length = h.length; const isHex = /^[0-9a-fA-F]+$/.test(h);
+      const isBase64 = /^[A-Za-z0-9+/=]+$/.test(h) && !isHex;
+      const chars = isHex ? 'Hex' : isBase64 ? 'Base64' : 'Mixed/ASCII';
+      hashDetailGrid.innerHTML = `<div class="bg-slate-800/40 rounded-xl p-3"><div class="text-xs text-slate-500">Length</div><div class="text-white font-mono font-bold text-lg">${length}</div></div><div class="bg-slate-800/40 rounded-xl p-3"><div class="text-xs text-slate-500">Encoding</div><div class="text-white font-mono font-bold text-lg">${chars}</div></div><div class="bg-slate-800/40 rounded-xl p-3"><div class="text-xs text-slate-500">Byte Length</div><div class="text-white font-mono font-bold text-lg">${isHex ? length / 2 : isBase64 ? Math.floor(length * 0.75) : '?'}</div></div><div class="bg-slate-800/40 rounded-xl p-3"><div class="text-xs text-slate-500">Bit Length</div><div class="text-white font-mono font-bold text-lg">${isHex ? length * 4 : isBase64 ? Math.floor(length * 0.75) * 8 : '?'}</div></div>`;
+      hashDetails.classList.remove('hidden');
+      const matched = hashIdentifiers.filter(id => id.match(h));
+      if (matched.length === 0) {
+        identifyResults.innerHTML = `<div class="bg-slate-800/30 rounded-2xl p-8 text-center border border-slate-700/30"><div class="text-amber-400 text-lg font-medium mb-2">No algorithms matched</div><p class="text-slate-500 text-sm">This hash format doesn't match any known algorithm.</p></div>`; return;
+      }
+      const grouped = []; const seen = new Set();
+      for (const m of matched) {
+        if (m.id === 'ntlm' && matched.some(x => x.id === 'md5')) { if (!seen.has('md5-ntlm')) { seen.add('md5-ntlm'); grouped.push({ name: 'MD5 / NTLM', bits: '128', sec: 'broken', note: 'Both produce 32 hex chars. Indistinguishable by format alone.', ids: ['md5','ntlm'] }); } continue; }
+        if ((m.id === 'pbkdf2' || m.id === 'scrypt') && matched.some(x => x.id === 'sha256')) { if (!seen.has('sha256-pbkdf2-scrypt')) { seen.add('sha256-pbkdf2-scrypt'); grouped.push({ name: 'SHA-256 / PBKDF2 / scrypt', bits: '256', sec: 'weak', note: 'All produce 64 hex chars. PBKDF2/scrypt output length is configurable.', ids: ['sha256','pbkdf2','scrypt'] }); } continue; }
+        if (!seen.has(m.id)) { seen.add(m.id); grouped.push({ name: m.name, bits: m.bits, sec: m.sec, note: m.desc, ids: [m.id] }); }
+      }
+      identifyResults.innerHTML = grouped.map(g => {
+        const sec = hashSecStyles[g.sec === 'broken' ? 'broken' : g.sec === 'weak' ? 'weak' : 'good'];
+        return `<div class="bg-slate-800/30 rounded-2xl p-5 border border-slate-700/30 fade-in"><div class="flex items-center justify-between mb-2"><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full ${sec.dot}"></span><span class="font-bold text-white text-base">${g.name}</span></div><span class="text-xs font-medium px-2 py-0.5 rounded-full border ${sec.badge}">${sec.label}</span></div><div class="flex items-center gap-4 text-sm text-slate-400"><span>${g.bits} bits</span><span class="text-slate-600">|</span><span>${g.note}</span></div></div>`;
+      }).join('');
+    }
+
+    hashInput.addEventListener('input', () => { clearTimeout(identTimeout); identTimeout = setTimeout(() => analyzeHash(hashInput.value), 200); });
+
+    // ================================================================
+    // MATRIX BACKGROUND
+    // ================================================================
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=';
-
-    const fontSize = 14;
-    let columns;
-    let drops;
-
-    function initDrops() {
-      columns = Math.floor(canvas.width / fontSize);
-      drops = Array(columns).fill(1);
-    }
-    initDrops();
-    window.addEventListener('resize', initDrops);
-
-    function drawMatrix() {
-      ctx.fillStyle = 'rgba(2, 6, 23, 0.08)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.font = fontSize + 'px monospace';
-
-      for (let i = 0; i < drops.length; i++) {
-        const char = chars[Math.floor(Math.random() * chars.length)];
-        const x = i * fontSize;
-        const y = drops[i] * fontSize;
-
-        ctx.fillStyle = y < fontSize * 6 ? 'rgba(16, 185, 129, 0.4)' : 'rgba(16, 185, 129, 0.9)';
-        ctx.fillText(char, x, y);
-
-        if (y > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0;
-        }
-        drops[i]++;
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    const mChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=';
+    const fSize = 14;
+    let mCols = Math.floor(canvas.width / fSize);
+    let mDrops = Array(mCols).fill(1);
+    window.addEventListener('resize', () => { mCols = Math.floor(canvas.width / fSize); mDrops = Array(mCols).fill(1); });
+    function draw() {
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.08)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = fSize + 'px monospace';
+      for (let i = 0; i < mDrops.length; i++) {
+        const ch = mChars[Math.floor(Math.random() * mChars.length)];
+        const x = i * fSize, y = mDrops[i] * fSize;
+        ctx.fillStyle = y < fSize * 6 ? 'rgba(16, 185, 129, 0.4)' : 'rgba(16, 185, 129, 0.9)';
+        ctx.fillText(ch, x, y);
+        if (y > canvas.height && Math.random() > 0.975) mDrops[i] = 0; mDrops[i]++;
       }
     }
-
-    setInterval(drawMatrix, 50);
-
+    setInterval(draw, 50);
   </script>
 </body>
 </html>
