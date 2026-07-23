@@ -263,7 +263,7 @@
               <div id="lookupNoMatch" class="hidden bg-amber-500/5 border border-amber-500/20 rounded-2xl p-5">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
-                  <div><div class="text-xs text-slate-500 uppercase tracking-wider">Result</div><div class="text-amber-400 font-bold">No match found in local database</div><p class="text-xs text-slate-500 mt-1">The hash is not in our demonstration set. Add it to the demo DB or try another hash.</p></div>
+                  <div id="lookupNoMatchContent"><div class="text-xs text-slate-500 uppercase tracking-wider">Result</div><div class="text-amber-400 font-bold">No match found in local database</div><p class="text-xs text-slate-500 mt-1">The hash is not in our demonstration set. Add it to the demo DB or try another hash.</p></div>
                 </div>
               </div>
               <div class="bg-slate-800/30 rounded-2xl p-4 border border-slate-700/30">
@@ -827,24 +827,23 @@
       { match: h => /^[0-9a-fA-F]{32}$/.test(h), name: 'MD5 / NTLM', bits: '128', sec: 'broken' },
     ];
 
-    // Common passwords for demo database
-    const commonPwds = ['password','123456','12345678','qwerty','admin','letmein','welcome','monkey','dragon','master','hello','abc123','passw0rd','iloveyou','sunshine','princess','football','shadow','trustno1','batman'];
+    // Wordlist for demo database (loaded from file)
+    let wordlist = [];
+    let wordlistLoaded = false;
 
-    // Demo DB: { algo_id: { hash: pwd } }
-    const demoDB = { md5: {}, sha1: {}, sha224: {}, sha256: {}, sha384: {}, sha512: {}, ntlm: {} };
-
-    async function buildDemoDB() {
-      for (const pwd of commonPwds) {
-        demoDB.md5[MD5(pwd)] = pwd;
-        demoDB.sha1[await sha1(pwd)] = pwd;
-        demoDB.sha224[await sha224(pwd)] = pwd;
-        demoDB.sha256[await sha256(pwd)] = pwd;
-        demoDB.sha384[await sha384(pwd)] = pwd;
-        demoDB.sha512[await sha512(pwd)] = pwd;
-        demoDB.ntlm[ntlmHash(pwd)] = pwd;
+    async function loadWordlist() {
+      try {
+        const res = await fetch('wordlist.txt');
+        const text = await res.text();
+        wordlist = text.split(/\r?\n/).map(w => w.trim()).filter(w => w.length > 0);
+        wordlistLoaded = true;
+      } catch(e) {
+        console.warn('Wordlist not loaded, using fallback list');
+        wordlist = ['password','123456','12345678','qwerty','admin','letmein','welcome','monkey','dragon','master','hello','abc123','passw0rd','iloveyou','sunshine','princess','football','shadow','trustno1','batman'];
+        wordlistLoaded = true;
       }
     }
-    buildDemoDB();
+    loadWordlist();
 
     function detectHashType(hash) {
       for (const rule of hashIdRules) {
@@ -853,24 +852,12 @@
       return null;
     }
 
-    function lookupHash(hash, typeName) {
-      const h = hash.toLowerCase();
-      // Map display names to DB keys
-      const map = { 'MD5 / NTLM': ['md5','ntlm'], 'SHA-1': ['sha1'], 'SHA-224': ['sha224'], 'SHA-256': ['sha256'], 'SHA-384': ['sha384'], 'SHA-512': ['sha512'] };
-      const keys = map[typeName];
-      if (!keys) return null;
-      for (const key of keys) {
-        if (demoDB[key][h]) return demoDB[key][h];
-        // Also check uppercase
-        if (demoDB[key][hash]) return demoDB[key][hash];
-      }
-      return null;
-    }
-
     function doLookup() {
       const raw = lookupInput.value.trim();
       lookupError.classList.add('hidden');
       lookupResults.classList.add('hidden');
+      lookupMatch.classList.add('hidden');
+      lookupNoMatch.classList.add('hidden');
 
       if (!raw) { lookupError.textContent = 'Please enter a hash to look up.'; lookupError.classList.remove('hidden'); return; }
       if (!/^[0-9a-fA-F]+$/.test(raw)) { lookupError.textContent = 'Invalid hash format. Only hexadecimal characters (0-9, a-f) are supported.'; lookupError.classList.remove('hidden'); return; }
@@ -882,14 +869,71 @@
       lookupHashValue.textContent = raw;
       lookupResults.classList.remove('hidden');
 
-      const plaintext = lookupHash(raw, detected.name);
-      if (plaintext) {
-        lookupMatch.classList.remove('hidden');
-        lookupNoMatch.classList.add('hidden');
-        lookupMatchValue.textContent = plaintext;
-      } else {
-        lookupMatch.classList.add('hidden');
+      if (!wordlistLoaded || wordlist.length === 0) {
         lookupNoMatch.classList.remove('hidden');
+        lookupNoMatchContent.innerHTML = '<div class="text-xs text-slate-500 uppercase tracking-wider">Result</div><div class="text-amber-400 font-bold">Wordlist not loaded yet</div><p class="text-xs text-slate-500 mt-1">Please wait for the wordlist to load and try again.</p>';
+        return;
+      }
+
+      const nocontent = (html) => { lookupNoMatchContent.innerHTML = '<div class="text-xs text-slate-500 uppercase tracking-wider">Result</div>' + html; };
+
+      lookupMatch.classList.add('hidden');
+      lookupNoMatch.classList.remove('hidden');
+      nocontent('<div class="flex items-center gap-2"><div class="spinner"></div><span class="text-slate-400">Searching ' + wordlist.length + ' passwords...</span></div>');
+
+      const h = raw.toLowerCase();
+      let found = false;
+
+      // MD5 / NTLM path (sync)
+      if (detected.name === 'MD5 / NTLM') {
+        const chunkSize = 500;
+        let idx = 0;
+        function processChunk() {
+          const end = Math.min(idx + chunkSize, wordlist.length);
+          for (let i = idx; i < end; i++) {
+            const pwd = wordlist[i];
+            if (MD5(pwd) === h) {
+              lookupMatch.classList.remove('hidden'); lookupNoMatch.classList.add('hidden');
+              lookupMatchValue.textContent = pwd; found = true; return;
+            }
+          }
+          idx = end;
+          if (idx < wordlist.length && !found) {
+            nocontent('<div class="flex items-center gap-2"><div class="spinner"></div><span class="text-slate-400">MD5: ' + Math.round(idx/wordlist.length*100) + '%</span></div>');
+            setTimeout(processChunk, 5);
+          } else if (!found) {
+            // Try NTLM
+            idx = 0; nocontent('<div class="flex items-center gap-2"><div class="spinner"></div><span class="text-slate-400">Trying NTLM...</span></div>');
+            function tryNtlm() {
+              const end2 = Math.min(idx + chunkSize, wordlist.length);
+              for (let i = idx; i < end2; i++) {
+                if (ntlmHash(wordlist[i]) === h) {
+                  lookupMatch.classList.remove('hidden'); lookupNoMatch.classList.add('hidden');
+                  lookupMatchValue.textContent = wordlist[i] + ' (NTLM)'; found = true; return;
+                }
+              }
+              idx = end2;
+              if (idx < wordlist.length && !found) { setTimeout(tryNtlm, 5); }
+              else if (!found) { nocontent('<div class="text-amber-400 font-bold">No match found</div><p class="text-xs text-slate-500 mt-1">Not in ' + wordlist.length + ' word demo DB.</p>'); }
+            }
+            tryNtlm();
+          }
+        }
+        processChunk();
+      } else {
+        // Async SHA path
+        const fn = detected.name === 'SHA-1' ? sha1 : detected.name === 'SHA-224' ? sha224 : detected.name === 'SHA-256' ? sha256 : detected.name === 'SHA-384' ? sha384 : detected.name === 'SHA-512' ? sha512 : null;
+        if (!fn) { nocontent('<div class="text-amber-400 font-bold">Unsupported</div>'); return; }
+        (async () => {
+          for (let i = 0; i < wordlist.length; i++) {
+            if (await fn(wordlist[i]) === h) {
+              lookupMatch.classList.remove('hidden'); lookupNoMatch.classList.add('hidden');
+              lookupMatchValue.textContent = wordlist[i]; found = true; return;
+            }
+            if (i % 200 === 0) { nocontent('<div class="flex items-center gap-2"><div class="spinner"></div><span class="text-slate-400">' + Math.round(i/wordlist.length*100) + '%</span></div>'); await new Promise(r => setTimeout(r, 0)); }
+          }
+          if (!found) nocontent('<div class="text-amber-400 font-bold">No match found</div><p class="text-xs text-slate-500 mt-1">Not in ' + wordlist.length + ' word demo DB.</p>');
+        })();
       }
     }
 
