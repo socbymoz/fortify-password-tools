@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hash Generator</title>
+  <title>Hash Tool</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/dist/argon2-browser.min.js"></script>
@@ -12,7 +12,6 @@
     ::selection { background: rgba(99, 102, 241, 0.3); }
     body { background: #0f172a; }
     .hash-cell { max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'Courier New', monospace; }
-    .hash-cell.expanded { white-space: normal; word-break: break-all; }
     .fade-in { animation: fadeIn 0.3s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .spinner { width: 16px; height: 16px; border: 2px solid rgba(99,102,241,0.3); border-top-color: #6366f1; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
@@ -20,6 +19,7 @@
     #matrixCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; opacity: 0.15; }
     .content { position: relative; z-index: 1; }
     .copied-toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: #a5b4fc; padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(99,102,241,0.3); font-size: 14px; z-index: 100; animation: fadeIn 0.2s ease-out; }
+    .tab-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
   </style>
 </head>
 <body class="min-h-screen text-slate-200 p-4 md:p-8">
@@ -31,45 +31,82 @@
       <div class="bg-slate-900/80 border-b border-slate-700/50 p-6 flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg font-bold">#</div>
         <div>
-          <h1 class="text-2xl font-bold text-white tracking-tight">Hash Generator</h1>
-          <p class="text-sm text-slate-400">Password hashing with 10 algorithms</p>
+          <h1 class="text-2xl font-bold text-white tracking-tight">Hash Tool</h1>
+          <p class="text-sm text-slate-400">Convert to hash &amp; identify hash algorithms</p>
         </div>
         <a href="index.html" class="ml-auto text-sm text-slate-500 hover:text-indigo-400 transition-colors px-3 py-1.5 rounded-lg border border-slate-700/50 hover:border-indigo-500/30">&larr; Back</a>
       </div>
 
+      <!-- Tab Navigation -->
+      <div class="flex border-b border-slate-700/50">
+        <div id="tab-tohash" class="tab-btn text-indigo-400 border-b-2 border-indigo-400 bg-indigo-500/10">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v14"/><path d="m19 9-7 7-7-7"/><path d="M5 21h14"/></svg>
+          Convert to Hash
+        </div>
+        <div id="tab-fromhash" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16v-6"/><circle cx="12" cy="6" r="1"/><path d="M5 3h14"/><path d="M5 21h14"/></svg>
+          Identify from Hash
+        </div>
+      </div>
+
       <div class="p-6 md:p-8 space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="md:col-span-2">
-            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
-            <input type="text" id="passwordInput" placeholder="Enter password to hash..." autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base" />
+
+        <!-- ======================== TO HASH TAB ======================== -->
+        <div id="view-tohash">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
+              <input type="text" id="passwordInput" placeholder="Enter password to hash..." autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Salt <span class="text-slate-600 font-normal normal-case">(optional)</span></label>
+              <input type="text" id="saltInput" placeholder="somesalt" autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base" />
+            </div>
           </div>
+
+          <div class="flex items-center gap-4 text-xs text-slate-500">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500"></span> Broken</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Weak</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Secure</span>
+            <span id="statusText" class="ml-auto text-indigo-400"></span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-xs text-slate-500 uppercase tracking-wider border-b border-slate-700/50">
+                  <th class="text-left py-3 px-2 font-semibold">Algorithm</th>
+                  <th class="text-left py-3 px-2 font-semibold">Hash Output</th>
+                  <th class="text-center py-3 px-2 font-semibold w-16">Bits</th>
+                  <th class="text-center py-3 px-2 font-semibold w-14">Sec</th>
+                  <th class="text-center py-3 px-2 font-semibold w-14">Copy</th>
+                </tr>
+              </thead>
+              <tbody id="resultsBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ======================== FROM HASH TAB ======================== -->
+        <div id="view-fromhash" class="hidden space-y-6">
           <div>
-            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Salt <span class="text-slate-600 font-normal normal-case">(optional)</span></label>
-            <input type="text" id="saltInput" placeholder="somesalt" autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base" />
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Hash String</label>
+            <input type="text" id="hashInput" placeholder="Paste a hash to identify (e.g. 5d41402abc4b2a76b9719d911017c592)" autocomplete="off" class="w-full bg-slate-950/70 border border-slate-600/50 rounded-xl px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base font-mono text-sm" />
+          </div>
+
+          <div id="identifyResults" class="space-y-3">
+            <div class="text-center text-slate-500 py-12">
+              <svg class="w-12 h-12 mx-auto mb-3 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <p>Enter a hash above to identify possible algorithms</p>
+            </div>
+          </div>
+
+          <div id="hashDetails" class="hidden bg-slate-950/40 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/30 space-y-3">
+            <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Hash Analysis</h3>
+            <div id="hashDetailGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm"></div>
           </div>
         </div>
 
-        <div class="flex items-center gap-4 text-xs text-slate-500">
-          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500"></span> Broken</span>
-          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Weak</span>
-          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Secure</span>
-          <span id="statusText" class="ml-auto text-indigo-400"></span>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="text-xs text-slate-500 uppercase tracking-wider border-b border-slate-700/50">
-                <th class="text-left py-3 px-2 font-semibold">Algorithm</th>
-                <th class="text-left py-3 px-2 font-semibold">Hash Output</th>
-                <th class="text-center py-3 px-2 font-semibold w-16">Bits</th>
-                <th class="text-center py-3 px-2 font-semibold w-14">Sec</th>
-                <th class="text-center py-3 px-2 font-semibold w-14">Copy</th>
-              </tr>
-            </thead>
-            <tbody id="resultsBody"></tbody>
-          </table>
-        </div>
       </div>
     </div>
   </div>
@@ -89,29 +126,21 @@
       function HH(a,b,c,d,x,s,t) { a = rotl(a + H(b,c,d) + x + t, s) + b; return a; }
       function II(a,b,c,d,x,s,t) { a = rotl(a + I(b,c,d) + x + t, s) + b; return a; }
       function strToBytes(s) {
-        const enc = encodeURIComponent(s);
-        const bytes = [];
-        for (let i = 0; i < enc.length; i++) {
-          const c = enc.charCodeAt(i);
-          if (c === 37) { bytes.push(parseInt(enc.substr(i+1,2),16)); i += 2; }
-          else bytes.push(c);
-        }
+        const enc = encodeURIComponent(s); const bytes = [];
+        for (let i = 0; i < enc.length; i++) { const c = enc.charCodeAt(i);
+          if (c === 37) { bytes.push(parseInt(enc.substr(i+1,2),16)); i += 2; } else bytes.push(c); }
         return bytes;
       }
       return function(s) {
-        const bytes = strToBytes(s);
-        const len = bytes.length;
-        const ml = len * 8;
+        const bytes = strToBytes(s); const len = bytes.length; const ml = len * 8;
         bytes.push(0x80);
         while (bytes.length % 64 !== 56) bytes.push(0);
         for (let i = 0; i < 8; i++) bytes.push((ml >>> (i*8)) & 0xff);
         let a=0x67452301, b=0xefcdab89, c=0x98badcfe, d=0x10325476;
         const S = [7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
-        const T = new Array(64);
-        for (let i = 0; i < 64; i++) T[i] = Math.floor(Math.abs(Math.sin(i+1)) * 0x100000000);
+        const T = new Array(64); for (let i = 0; i < 64; i++) T[i] = Math.floor(Math.abs(Math.sin(i+1)) * 0x100000000);
         for (let i = 0; i < bytes.length; i += 64) {
-          const X = [];
-          for (let j = 0; j < 16; j++) X[j] = bytes[i+j*4] | (bytes[i+j*4+1]<<8) | (bytes[i+j*4+2]<<16) | (bytes[i+j*4+3]<<24);
+          const X = []; for (let j = 0; j < 16; j++) X[j] = bytes[i+j*4] | (bytes[i+j*4+1]<<8) | (bytes[i+j*4+2]<<16) | (bytes[i+j*4+3]<<24);
           let A=a, B=b, C=c, D=d;
           for (let j = 0; j < 64; j++) {
             let t;
@@ -123,10 +152,7 @@
           }
           a += A; b += B; c += C; d += D;
         }
-        function hex(n) {
-          const h = (n >>> 0).toString(16);
-          return '00000000'.substring(h.length) + h;
-        }
+        function hex(n) { const h = (n >>> 0).toString(16); return '00000000'.substring(h.length) + h; }
         return hex(a) + hex(b) + hex(c) + hex(d);
       };
     })();
@@ -136,15 +162,10 @@
     // ============================================================
     function MD4(s) {
       const bytes = [];
-      for (let i = 0; i < s.length; i++) {
-        const c = s.charCodeAt(i);
-        bytes.push(c & 0xff);
-        bytes.push((c >>> 8) & 0xff);
-      }
-      const len = bytes.length;
-      const ml = len * 8;
-      bytes.push(0x80);
-      while (bytes.length % 64 !== 56) bytes.push(0);
+      for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i);
+        bytes.push(c & 0xff); bytes.push((c >>> 8) & 0xff); }
+      const len = bytes.length; const ml = len * 8;
+      bytes.push(0x80); while (bytes.length % 64 !== 56) bytes.push(0);
       for (let i = 0; i < 8; i++) bytes.push((ml >>> (i*8)) & 0xff);
       function rotl(n, s) { return (n << s) | (n >>> (32-s)); }
       function F(x,y,z) { return (x & y) | (~x & z); }
@@ -152,124 +173,63 @@
       function H(x,y,z) { return x ^ y ^ z; }
       let a=0x67452301, b=0xefcdab89, c=0x98badcfe, d=0x10325476;
       for (let i = 0; i < bytes.length; i += 64) {
-        const X = [];
-        for (let j = 0; j < 16; j++) X[j] = bytes[i+j*4] | (bytes[i+j*4+1]<<8) | (bytes[i+j*4+2]<<16) | (bytes[i+j*4+3]<<24);
+        const X = []; for (let j = 0; j < 16; j++) X[j] = bytes[i+j*4] | (bytes[i+j*4+1]<<8) | (bytes[i+j*4+2]<<16) | (bytes[i+j*4+3]<<24);
         let A=a, B=b, C=c, D=d;
-        A = rotl(A + F(B,C,D) + X[0], 3);
-        D = rotl(D + F(A,B,C) + X[1], 7);
-        C = rotl(C + F(D,A,B) + X[2], 11);
-        B = rotl(B + F(C,D,A) + X[3], 19);
-        A = rotl(A + F(B,C,D) + X[4], 3);
-        D = rotl(D + F(A,B,C) + X[5], 7);
-        C = rotl(C + F(D,A,B) + X[6], 11);
-        B = rotl(B + F(C,D,A) + X[7], 19);
-        A = rotl(A + F(B,C,D) + X[8], 3);
-        D = rotl(D + F(A,B,C) + X[9], 7);
-        C = rotl(C + F(D,A,B) + X[10], 11);
-        B = rotl(B + F(C,D,A) + X[11], 19);
-        A = rotl(A + F(B,C,D) + X[12], 3);
-        D = rotl(D + F(A,B,C) + X[13], 7);
-        C = rotl(C + F(D,A,B) + X[14], 11);
-        B = rotl(B + F(C,D,A) + X[15], 19);
-        A = rotl(A + G(B,C,D) + X[0] + 0x5a827999, 3);
-        D = rotl(D + G(A,B,C) + X[4] + 0x5a827999, 5);
-        C = rotl(C + G(D,A,B) + X[8] + 0x5a827999, 9);
-        B = rotl(B + G(C,D,A) + X[12] + 0x5a827999, 13);
-        A = rotl(A + G(B,C,D) + X[1] + 0x5a827999, 3);
-        D = rotl(D + G(A,B,C) + X[5] + 0x5a827999, 5);
-        C = rotl(C + G(D,A,B) + X[9] + 0x5a827999, 9);
-        B = rotl(B + G(C,D,A) + X[13] + 0x5a827999, 13);
-        A = rotl(A + G(B,C,D) + X[2] + 0x5a827999, 3);
-        D = rotl(D + G(A,B,C) + X[6] + 0x5a827999, 5);
-        C = rotl(C + G(D,A,B) + X[10] + 0x5a827999, 9);
-        B = rotl(B + G(C,D,A) + X[14] + 0x5a827999, 13);
-        A = rotl(A + G(B,C,D) + X[3] + 0x5a827999, 3);
-        D = rotl(D + G(A,B,C) + X[7] + 0x5a827999, 5);
-        C = rotl(C + G(D,A,B) + X[11] + 0x5a827999, 9);
-        B = rotl(B + G(C,D,A) + X[15] + 0x5a827999, 13);
-        A = rotl(A + H(B,C,D) + X[0] + 0x6ed9eba1, 3);
-        D = rotl(D + H(A,B,C) + X[8] + 0x6ed9eba1, 9);
-        C = rotl(C + H(D,A,B) + X[4] + 0x6ed9eba1, 11);
-        B = rotl(B + H(C,D,A) + X[12] + 0x6ed9eba1, 15);
-        A = rotl(A + H(B,C,D) + X[2] + 0x6ed9eba1, 3);
-        D = rotl(D + H(A,B,C) + X[10] + 0x6ed9eba1, 9);
-        C = rotl(C + H(D,A,B) + X[6] + 0x6ed9eba1, 11);
-        B = rotl(B + H(C,D,A) + X[14] + 0x6ed9eba1, 15);
-        A = rotl(A + H(B,C,D) + X[1] + 0x6ed9eba1, 3);
-        D = rotl(D + H(A,B,C) + X[9] + 0x6ed9eba1, 9);
-        C = rotl(C + H(D,A,B) + X[5] + 0x6ed9eba1, 11);
-        B = rotl(B + H(C,D,A) + X[13] + 0x6ed9eba1, 15);
-        A = rotl(A + H(B,C,D) + X[3] + 0x6ed9eba1, 3);
-        D = rotl(D + H(A,B,C) + X[11] + 0x6ed9eba1, 9);
-        C = rotl(C + H(D,A,B) + X[7] + 0x6ed9eba1, 11);
-        B = rotl(B + H(C,D,A) + X[15] + 0x6ed9eba1, 15);
+        A = rotl(A + F(B,C,D) + X[0], 3); D = rotl(D + F(A,B,C) + X[1], 7);
+        C = rotl(C + F(D,A,B) + X[2], 11); B = rotl(B + F(C,D,A) + X[3], 19);
+        A = rotl(A + F(B,C,D) + X[4], 3); D = rotl(D + F(A,B,C) + X[5], 7);
+        C = rotl(C + F(D,A,B) + X[6], 11); B = rotl(B + F(C,D,A) + X[7], 19);
+        A = rotl(A + F(B,C,D) + X[8], 3); D = rotl(D + F(A,B,C) + X[9], 7);
+        C = rotl(C + F(D,A,B) + X[10], 11); B = rotl(B + F(C,D,A) + X[11], 19);
+        A = rotl(A + F(B,C,D) + X[12], 3); D = rotl(D + F(A,B,C) + X[13], 7);
+        C = rotl(C + F(D,A,B) + X[14], 11); B = rotl(B + F(C,D,A) + X[15], 19);
+        A = rotl(A + G(B,C,D) + X[0] + 0x5a827999, 3); D = rotl(D + G(A,B,C) + X[4] + 0x5a827999, 5);
+        C = rotl(C + G(D,A,B) + X[8] + 0x5a827999, 9); B = rotl(B + G(C,D,A) + X[12] + 0x5a827999, 13);
+        A = rotl(A + G(B,C,D) + X[1] + 0x5a827999, 3); D = rotl(D + G(A,B,C) + X[5] + 0x5a827999, 5);
+        C = rotl(C + G(D,A,B) + X[9] + 0x5a827999, 9); B = rotl(B + G(C,D,A) + X[13] + 0x5a827999, 13);
+        A = rotl(A + G(B,C,D) + X[2] + 0x5a827999, 3); D = rotl(D + G(A,B,C) + X[6] + 0x5a827999, 5);
+        C = rotl(C + G(D,A,B) + X[10] + 0x5a827999, 9); B = rotl(B + G(C,D,A) + X[14] + 0x5a827999, 13);
+        A = rotl(A + G(B,C,D) + X[3] + 0x5a827999, 3); D = rotl(D + G(A,B,C) + X[7] + 0x5a827999, 5);
+        C = rotl(C + G(D,A,B) + X[11] + 0x5a827999, 9); B = rotl(B + G(C,D,A) + X[15] + 0x5a827999, 13);
+        A = rotl(A + H(B,C,D) + X[0] + 0x6ed9eba1, 3); D = rotl(D + H(A,B,C) + X[8] + 0x6ed9eba1, 9);
+        C = rotl(C + H(D,A,B) + X[4] + 0x6ed9eba1, 11); B = rotl(B + H(C,D,A) + X[12] + 0x6ed9eba1, 15);
+        A = rotl(A + H(B,C,D) + X[2] + 0x6ed9eba1, 3); D = rotl(D + H(A,B,C) + X[10] + 0x6ed9eba1, 9);
+        C = rotl(C + H(D,A,B) + X[6] + 0x6ed9eba1, 11); B = rotl(B + H(C,D,A) + X[14] + 0x6ed9eba1, 15);
+        A = rotl(A + H(B,C,D) + X[1] + 0x6ed9eba1, 3); D = rotl(D + H(A,B,C) + X[9] + 0x6ed9eba1, 9);
+        C = rotl(C + H(D,A,B) + X[5] + 0x6ed9eba1, 11); B = rotl(B + H(C,D,A) + X[13] + 0x6ed9eba1, 15);
+        A = rotl(A + H(B,C,D) + X[3] + 0x6ed9eba1, 3); D = rotl(D + H(A,B,C) + X[11] + 0x6ed9eba1, 9);
+        C = rotl(C + H(D,A,B) + X[7] + 0x6ed9eba1, 11); B = rotl(B + H(C,D,A) + X[15] + 0x6ed9eba1, 15);
         a += A; b += B; c += C; d += D;
       }
       function hex(n) { const h = (n >>> 0).toString(16); return '00000000'.substring(h.length) + h; }
       return hex(a) + hex(b) + hex(c) + hex(d);
     }
-
-    function ntlmHash(s) {
-      return MD4(s);
-    }
+    function ntlmHash(s) { return MD4(s); }
 
     // ============================================================
     // Web Crypto Helpers
     // ============================================================
     function strToBuf(s) { return new TextEncoder().encode(s); }
+    function bufToHex(buf) { return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join(''); }
+    function hexToBytes(hex) { const bytes = []; for (let i = 0; i < hex.length; i += 2) bytes.push(parseInt(hex.substr(i, 2), 16)); return new Uint8Array(bytes); }
 
-    function bufToHex(buf) {
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    function hexToBytes(hex) {
-      const bytes = [];
-      for (let i = 0; i < hex.length; i += 2) bytes.push(parseInt(hex.substr(i, 2), 16));
-      return new Uint8Array(bytes);
-    }
-
-    async function sha1(s) {
-      const buf = await crypto.subtle.digest('SHA-1', strToBuf(s));
-      return bufToHex(buf);
-    }
-
-    async function sha256(s) {
-      const buf = await crypto.subtle.digest('SHA-256', strToBuf(s));
-      return bufToHex(buf);
-    }
-
-    async function sha512(s) {
-      const buf = await crypto.subtle.digest('SHA-512', strToBuf(s));
-      return bufToHex(buf);
-    }
+    async function sha1(s) { return bufToHex(await crypto.subtle.digest('SHA-1', strToBuf(s))); }
+    async function sha256(s) { return bufToHex(await crypto.subtle.digest('SHA-256', strToBuf(s))); }
+    async function sha512(s) { return bufToHex(await crypto.subtle.digest('SHA-512', strToBuf(s))); }
 
     async function pbkdf2Hash(pwd, salt, iterations = 100000, keyLen = 32) {
       const key = await crypto.subtle.importKey('raw', strToBuf(pwd), 'PBKDF2', false, ['deriveBits']);
-      const bits = await crypto.subtle.deriveBits(
-        { name: 'PBKDF2', salt: strToBuf(salt), iterations, hash: 'SHA-256' },
-        key, keyLen * 8
-      );
-      return bufToHex(bits);
+      return bufToHex(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: strToBuf(salt), iterations, hash: 'SHA-256' }, key, keyLen * 8));
     }
 
     async function scryptHash(pwd, salt, N = 16384, r = 8, p = 1, keyLen = 32) {
-      try {
-        const key = await crypto.subtle.importKey('raw', strToBuf(pwd), { name: 'SCrypt' }, false, ['deriveBits']);
-        const bits = await crypto.subtle.deriveBits(
-          { name: 'SCrypt', salt: strToBuf(salt), cost: N, blockSize: r, parallel: p },
-          key, keyLen * 8
-        );
-        return bufToHex(bits);
-      } catch(e) {
-        // Fallback: use scrypt-js if available via CDN fallback
-        throw new Error('SCrypt not supported in this browser');
-      }
+      const key = await crypto.subtle.importKey('raw', strToBuf(pwd), { name: 'SCrypt' }, false, ['deriveBits']);
+      return bufToHex(await crypto.subtle.deriveBits({ name: 'SCrypt', salt: strToBuf(salt), cost: N, blockSize: r, parallel: p }, key, keyLen * 8));
     }
 
     function bcryptHash(pwd, salt) {
       if (salt) {
-        const hash = MD5(salt);
-        const bytes = hexToBytes(hash);
+        const h = MD5(salt); const bytes = hexToBytes(h);
         const b64 = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '.').replace(/\//g, 'A').substring(0, 22);
         return bcrypt.hashSync(pwd, '$2a$10$' + b64);
       }
@@ -277,20 +237,8 @@
     }
 
     async function argon2Hash(pwd, salt) {
-      try {
-        const result = await argon2.hash({
-          pass: pwd,
-          salt: salt || 'somesalt',
-          time: 2,
-          mem: 65536,
-          parallelism: 1,
-          hashLen: 32,
-          type: argon2.ArgonType.Argon2id
-        });
-        return bufToHex(result.hash);
-      } catch(e) {
-        return 'Error: ' + e.message;
-      }
+      const result = await argon2.hash({ pass: pwd, salt: salt || 'somesalt', time: 2, mem: 65536, parallelism: 1, hashLen: 32, type: argon2.ArgonType.Argon2id });
+      return bufToHex(result.hash);
     }
 
     // ============================================================
@@ -311,26 +259,42 @@
 
     const secStyles = {
       broken: { dot: 'bg-red-500', label: 'Broken', badge: 'bg-red-500/15 text-red-400 border-red-500/25' },
-      weak:   { dot: 'bg-amber-500', label: 'Weak', badge: 'bg-amber-500/15 text-amber-400 border-amber-500/25' },
-      good:   { dot: 'bg-emerald-500', label: 'Good', badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' },
+      weak:   { dot: 'bg-amber-500', label: 'Weak',   badge: 'bg-amber-500/15 text-amber-400 border-amber-500/25' },
+      good:   { dot: 'bg-emerald-500', label: 'Good',  badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' },
     };
 
     // ============================================================
-    // UI
+    // Tab Switching
+    // ============================================================
+    const tabToHash = document.getElementById('tab-tohash');
+    const tabFromHash = document.getElementById('tab-fromhash');
+    const viewToHash = document.getElementById('view-tohash');
+    const viewFromHash = document.getElementById('view-fromhash');
+
+    function switchTab(tab) {
+      tabToHash.className = 'tab-btn ' + (tab === 'tohash' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50');
+      tabFromHash.className = 'tab-btn ' + (tab === 'fromhash' ? 'text-indigo-400 border-b-2 border-indigo-400 bg-indigo-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50');
+      viewToHash.classList.toggle('hidden', tab !== 'tohash');
+      viewFromHash.classList.toggle('hidden', tab !== 'fromhash');
+    }
+
+    tabToHash.addEventListener('click', () => switchTab('tohash'));
+    tabFromHash.addEventListener('click', () => switchTab('fromhash'));
+
+    // ============================================================
+    // TO HASH - Logic
     // ============================================================
     const pwdInput = document.getElementById('passwordInput');
     const saltInput = document.getElementById('saltInput');
     const resultsBody = document.getElementById('resultsBody');
     const statusText = document.getElementById('statusText');
-    let timeout = null;
-    let copyTimer = null;
+    let toHashTimeout = null;
 
     function showToast(msg) {
       const old = document.querySelector('.copied-toast');
       if (old) old.remove();
       const toast = document.createElement('div');
-      toast.className = 'copied-toast';
-      toast.textContent = msg;
+      toast.className = 'copied-toast'; toast.textContent = msg;
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 2000);
     }
@@ -339,96 +303,151 @@
       const sec = secStyles[algo.sec];
       const bitsLabel = algo.bits + (algo.id === 'scrypt' || algo.id === 'pbkdf2' || algo.id === 'argon2' || algo.id === 'yescrypt' ? '*' : '');
       return `<tr class="border-b border-slate-800/50 hover:bg-slate-800/20 transition-colors fade-in">
-        <td class="py-3 px-2">
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full ${sec.dot}"></span>
-            <span class="font-medium text-slate-200">${algo.name}</span>
-          </div>
-        </td>
-        <td class="py-3 px-2">
-          ${loading ? '<div class="flex items-center gap-2"><div class="spinner"></div><span class="text-slate-500 text-xs">Hashing...</span></div>'
-            : error ? '<span class="text-red-400 text-xs">' + error + '</span>'
-            : '<code class="hash-cell text-xs text-indigo-300/90 block max-w-[320px] md:max-w-[480px] lg:max-w-[600px]" title="' + hash + '">' + hash + '</code>'}
-        </td>
+        <td class="py-3 px-2"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full ${sec.dot}"></span><span class="font-medium text-slate-200">${algo.name}</span></div></td>
+        <td class="py-3 px-2">${loading ? '<div class="flex items-center gap-2"><div class="spinner"></div><span class="text-slate-500 text-xs">Hashing...</span></div>' : error ? '<span class="text-red-400 text-xs">' + error + '</span>' : '<code class="hash-cell text-xs text-indigo-300/90 block max-w-[320px] md:max-w-[480px] lg:max-w-[600px]" title="' + hash + '">' + hash + '</code>'}</td>
         <td class="py-3 px-2 text-center text-xs text-slate-500 font-mono">${bitsLabel}</td>
-        <td class="py-3 px-2 text-center">
-          <span class="inline-block text-xs font-medium px-2 py-0.5 rounded-full border ${sec.badge}">${sec.label}</span>
-        </td>
-        <td class="py-3 px-2 text-center">
-          <button class="copy-btn text-slate-600 hover:text-indigo-400 transition-colors p-1.5 rounded-lg hover:bg-indigo-500/10 ${!hash || loading || error ? 'opacity-30 pointer-events-none' : ''}" data-hash="${hash || ''}" ${hash ? '' : 'disabled'}>
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-          </button>
-        </td>
+        <td class="py-3 px-2 text-center"><span class="inline-block text-xs font-medium px-2 py-0.5 rounded-full border ${sec.badge}">${sec.label}</span></td>
+        <td class="py-3 px-2 text-center"><button class="copy-btn text-slate-600 hover:text-indigo-400 transition-colors p-1.5 rounded-lg hover:bg-indigo-500/10 ${!hash || loading || error ? 'opacity-30 pointer-events-none' : ''}" data-hash="${hash || ''}" ${hash ? '' : 'disabled'}><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button></td>
       </tr>`;
     }
 
-    function renderInitial() {
-      resultsBody.innerHTML = algorithms.map(a => renderRow(a, '', false, false)).join('');
-    }
+    function renderInitial() { resultsBody.innerHTML = algorithms.map(a => renderRow(a, '', false, false)).join(''); }
 
     async function computeAll() {
-      const pwd = pwdInput.value;
-      const salt = saltInput.value || 'somesalt';
-
-      if (!pwd) {
-        renderInitial();
-        statusText.textContent = '';
-        return;
-      }
-
-      // Show loading spinners
+      const pwd = pwdInput.value; const salt = saltInput.value || 'somesalt';
+      if (!pwd) { renderInitial(); statusText.textContent = ''; return; }
       resultsBody.innerHTML = algorithms.map(a => renderRow(a, '', true, false)).join('');
       statusText.innerHTML = '<span class="flex items-center gap-2"><div class="spinner"></div> Computing hashes...</span>';
-
       const rows = resultsBody.querySelectorAll('tr');
-
-      // Compute all in parallel
-      const promises = algorithms.map(async (algo, i) => {
-        try {
-          const hash = await algo.fn(pwd, algo.needSalt ? salt : '');
-          return { i, hash, error: null };
-        } catch(e) {
-          return { i, hash: null, error: e.message || 'Error computing hash' };
-        }
-      });
-
-      const results = await Promise.allSettled(promises);
-
+      const results = await Promise.allSettled(algorithms.map(async (algo, i) => {
+        try { const hash = await algo.fn(pwd, algo.needSalt ? salt : ''); return { i, hash, error: null }; }
+        catch(e) { return { i, hash: null, error: e.message || 'Error' }; }
+      }));
       for (const res of results) {
         if (res.status === 'fulfilled') {
           const { i, hash, error } = res.value;
           rows[i].outerHTML = renderRow(algorithms[i], hash || '', false, error);
         }
       }
-
       statusText.textContent = 'All hashes computed';
     }
 
-    function debouncedCompute() {
-      clearTimeout(timeout);
-      timeout = setTimeout(computeAll, 200);
-    }
+    pwdInput.addEventListener('input', () => { clearTimeout(toHashTimeout); toHashTimeout = setTimeout(computeAll, 200); });
+    saltInput.addEventListener('input', () => { clearTimeout(toHashTimeout); toHashTimeout = setTimeout(computeAll, 200); });
 
-    pwdInput.addEventListener('input', debouncedCompute);
-    saltInput.addEventListener('input', debouncedCompute);
-
-    // Copy handler
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('.copy-btn');
       if (!btn || btn.disabled) return;
       const hash = btn.dataset.hash;
       if (!hash) return;
-      navigator.clipboard.writeText(hash).then(() => {
-        showToast('Copied to clipboard');
-      }).catch(() => {
-        const ta = document.createElement('textarea');
-        ta.value = hash;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        showToast('Copied to clipboard');
+      navigator.clipboard.writeText(hash).then(() => showToast('Copied to clipboard')).catch(() => {
+        const ta = document.createElement('textarea'); ta.value = hash;
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta); showToast('Copied to clipboard');
       });
+    });
+
+    renderInitial();
+
+    // ============================================================
+    // FROM HASH - Hash Identification
+    // ============================================================
+    const hashInput = document.getElementById('hashInput');
+    const identifyResults = document.getElementById('identifyResults');
+    const hashDetails = document.getElementById('hashDetails');
+    const hashDetailGrid = document.getElementById('hashDetailGrid');
+    let identifyTimeout = null;
+
+    const hashIdentifiers = [
+      { id: 'argon2',   name: 'Argon2',  match: h => /^\$argon2(id|i|d)\$/.test(h),   bits: 'Variable', desc: 'Starts with $argon2', sec: 'good' },
+      { id: 'bcrypt',   name: 'bcrypt',  match: h => /^\$(2[abyx]|2b)\$/.test(h) && h.length === 60, bits: '184',    desc: 'Starts with $2b$ / 60 chars', sec: 'good' },
+      { id: 'yescrypt', name: 'yescrypt',match: h => /^\$y\$/.test(h),                bits: 'Variable', desc: 'Starts with $y$', sec: 'good' },
+      { id: 'sha512',   name: 'SHA-512', match: h => /^[0-9a-fA-F]{128}$/.test(h),   bits: '512',    desc: '128 hex chars', sec: 'weak' },
+      { id: 'sha256',   name: 'SHA-256', match: h => /^[0-9a-fA-F]{64}$/.test(h),    bits: '256',    desc: '64 hex chars', sec: 'weak' },
+      { id: 'sha1',     name: 'SHA-1',   match: h => /^[0-9a-fA-F]{40}$/.test(h),    bits: '160',    desc: '40 hex chars', sec: 'broken' },
+      { id: 'md5',      name: 'MD5',     match: h => /^[0-9a-fA-F]{32}$/.test(h),    bits: '128',    desc: '32 hex chars', sec: 'broken' },
+      { id: 'ntlm',     name: 'NTLM',    match: h => /^[0-9a-fA-F]{32}$/.test(h),    bits: '128',    desc: '32 hex chars (same format as MD5)', sec: 'weak' },
+      { id: 'pbkdf2',   name: 'PBKDF2',  match: h => /^[0-9a-fA-F]{64}$/.test(h) || /^\$pbkdf2/.test(h), bits: '256', desc: '64 hex chars or $pbkdf2 prefix', sec: 'good' },
+      { id: 'scrypt',   name: 'scrypt',  match: h => /^[0-9a-fA-F]{64}$/.test(h),    bits: '256',    desc: '64 hex chars', sec: 'good' },
+    ];
+
+    function analyzeHash(raw) {
+      const h = raw.trim();
+      if (!h) {
+        identifyResults.innerHTML = `<div class="text-center text-slate-500 py-12"><svg class="w-12 h-12 mx-auto mb-3 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><p>Enter a hash above to identify possible algorithms</p></div>`;
+        hashDetails.classList.add('hidden');
+        return;
+      }
+
+      const length = h.length;
+      const isHex = /^[0-9a-fA-F]+$/.test(h);
+      const isBase64 = /^[A-Za-z0-9+/=]+$/.test(h) && !isHex;
+      const chars = isHex ? 'Hex' : isBase64 ? 'Base64' : 'Mixed/ASCII';
+
+      hashDetailGrid.innerHTML = `
+        <div class="bg-slate-800/40 rounded-xl p-3"><div class="text-xs text-slate-500">Length</div><div class="text-white font-mono font-bold text-lg">${length}</div></div>
+        <div class="bg-slate-800/40 rounded-xl p-3"><div class="text-xs text-slate-500">Encoding</div><div class="text-white font-mono font-bold text-lg">${chars}</div></div>
+        <div class="bg-slate-800/40 rounded-xl p-3"><div class="text-xs text-slate-500">Byte Length</div><div class="text-white font-mono font-bold text-lg">${isHex ? length / 2 : isBase64 ? Math.floor(length * 0.75) : '?'}</div></div>
+        <div class="bg-slate-800/40 rounded-xl p-3"><div class="text-xs text-slate-500">Bit Length</div><div class="text-white font-mono font-bold text-lg">${isHex ? length * 4 : isBase64 ? Math.floor(length * 0.75) * 8 : '?'}</div></div>
+      `;
+      hashDetails.classList.remove('hidden');
+
+      const matched = hashIdentifiers.filter(id => id.match(h));
+
+      if (matched.length === 0) {
+        identifyResults.innerHTML = `<div class="bg-slate-800/30 rounded-2xl p-8 text-center border border-slate-700/30"><div class="text-amber-400 text-lg font-medium mb-2">No algorithms matched</div><p class="text-slate-500 text-sm">This hash format doesn't match any known algorithm in our database. It could be a custom hash, unsupported algorithm, or an invalid input.</p></div>`;
+        return;
+      }
+
+      // Deduplicate: if both MD5 and NTLM match (both 32 hex), and just MD5 and SHA-256/PBKDF2/scrypt overlap on 64 hex
+      // Show them with a note about ambiguity
+      const grouped = [];
+      const seen = new Set();
+      for (const m of matched) {
+        const key = m.bits + m.sec;
+        if (m.id === 'ntlm' && matched.some(x => x.id === 'md5')) {
+          // Both matched 32 hex - show combined
+          if (!seen.has('md5-ntlm')) {
+            seen.add('md5-ntlm');
+            grouped.push({ name: 'MD5 / NTLM', bits: '128', sec: 'broken', note: 'Both produce 32 hex chars. Indistinguishable by format alone.', ids: ['md5','ntlm'] });
+          }
+          continue;
+        }
+        if ((m.id === 'pbkdf2' || m.id === 'scrypt') && matched.some(x => x.id === 'sha256')) {
+          if (!seen.has('sha256-pbkdf2-scrypt')) {
+            seen.add('sha256-pbkdf2-scrypt');
+            grouped.push({ name: 'SHA-256 / PBKDF2 / scrypt', bits: '256', sec: 'weak', note: 'All produce 64 hex chars. PBKDF2/scrypt output length is configurable.', ids: ['sha256','pbkdf2','scrypt'] });
+          }
+          continue;
+        }
+        if (!seen.has(m.id)) {
+          seen.add(m.id);
+          grouped.push({ name: m.name, bits: m.bits, sec: m.sec, note: m.desc, ids: [m.id] });
+        }
+      }
+
+      identifyResults.innerHTML = grouped.map(g => {
+        const sec = secStyles[g.sec === 'broken' ? 'broken' : g.sec === 'weak' ? 'weak' : 'good'];
+        return `<div class="bg-slate-800/30 rounded-2xl p-5 border border-slate-700/30 fade-in">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full ${sec.dot}"></span>
+              <span class="font-bold text-white text-base">${g.name}</span>
+            </div>
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full border ${sec.badge}">${sec.label}</span>
+          </div>
+          <div class="flex items-center gap-4 text-sm text-slate-400">
+            <span>${g.bits} bits</span>
+            <span class="text-slate-600">|</span>
+            <span>${g.note}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    hashInput.addEventListener('input', () => {
+      clearTimeout(identifyTimeout);
+      identifyTimeout = setTimeout(() => analyzeHash(hashInput.value), 200);
     });
 
     // ============================================================
@@ -436,37 +455,27 @@
     // ============================================================
     const canvas = document.getElementById('matrixCanvas');
     const ctx = canvas.getContext('2d');
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resize();
-    window.addEventListener('resize', resize);
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+{}[]:;<>.?/~';
-    const fontSize = 14;
-    let cols = Math.floor(canvas.width / fontSize);
-    let drops = Array(cols).fill(1);
-    window.addEventListener('resize', () => {
-      cols = Math.floor(canvas.width / fontSize);
-      drops = Array(cols).fill(1);
-    });
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    const mChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+{}[]:;<>.?/~';
+    const fSize = 14;
+    let mCols = Math.floor(canvas.width / fSize);
+    let mDrops = Array(mCols).fill(1);
+    window.addEventListener('resize', () => { mCols = Math.floor(canvas.width / fSize); mDrops = Array(mCols).fill(1); });
     function draw() {
       ctx.fillStyle = 'rgba(15, 23, 42, 0.08)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.font = fontSize + 'px monospace';
-      for (let i = 0; i < drops.length; i++) {
-        const ch = chars[Math.floor(Math.random() * chars.length)];
-        const x = i * fontSize;
-        const y = drops[i] * fontSize;
-        ctx.fillStyle = y < fontSize * 6 ? 'rgba(99, 102, 241, 0.25)' : 'rgba(99, 102, 241, 0.6)';
+      ctx.font = fSize + 'px monospace';
+      for (let i = 0; i < mDrops.length; i++) {
+        const ch = mChars[Math.floor(Math.random() * mChars.length)];
+        const x = i * fSize, y = mDrops[i] * fSize;
+        ctx.fillStyle = y < fSize * 6 ? 'rgba(99, 102, 241, 0.25)' : 'rgba(99, 102, 241, 0.6)';
         ctx.fillText(ch, x, y);
-        if (y > canvas.height && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
+        if (y > canvas.height && Math.random() > 0.975) mDrops[i] = 0;
+        mDrops[i]++;
       }
     }
     setInterval(draw, 50);
-
-    renderInitial();
   </script>
 </body>
 </html>
